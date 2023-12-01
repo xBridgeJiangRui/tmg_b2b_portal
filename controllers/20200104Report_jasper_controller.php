@@ -12,7 +12,7 @@ class Report_jasper_controller extends CI_Controller {
 
     public function index()
     {
-       // $this->load->view('header'); die;
+       // $this->load->view('header');
         if($this->session->userdata('loginuser') == true && $this->session->userdata('userid') != '')
         { 
             $this->load->view('forgot_email_form');
