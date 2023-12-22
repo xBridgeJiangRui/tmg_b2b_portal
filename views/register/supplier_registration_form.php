@@ -762,45 +762,57 @@
 
               <br>
 
-              <!-- <div class="note" style="margin-left: 15px;">
-                   <h5 class="text-bold">
-                    <?php
-                    if ($register->num_rows() != 0) {
-                      foreach ($register_charge_type->result() as $key) {
-                        $memo_type = $key->memo_type;
-                        $pdf_template_type = $key->template_type;
+              <div class="note" style="margin-left: 15px;">
+                <h5 class="text-bold">
+                <?php 
+                if($register->num_rows() != 0)
+                {
+                  foreach($register_charge_type->result() as $key)
+                  { 
+                    $memo_type = $key->memo_type;
+                    $pdf_template_type = $key->template_type;
                     ?>
-                        <input type="hidden" id="hidden_memo" name="hidden_memo" value="<?php echo $key->memo_type ?>" disabled>
-                        <?php
-                        if ($pdf_template_type == 'outright' || $pdf_template_type == 'Outright' || $pdf_template_type == 'waive_outright') {
-                        ?>
-                          There will be one off RM300 Registration Fees and monthly subscriptions incur once Register. Refer to Page 1 <a href="<?php echo $defined_path . 'xBridge_B2B_Registration_outright.pdf' ?>" download ><span style="color:red;">xBridge Memo Charges</span></a>
-                          <?php
-                        } else if ($pdf_template_type == 'consignment' || $pdf_template_type == 'Consign' || $pdf_template_type == 'waive_consign') {
-                          ?>
-                          There will be one off RM300 Registration Fees and monthly subscriptions count based on outlet usage once Register @ xBridge B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path . 'xBridge_B2B_Registration_consignment.pdf' ?>" download ><span style="color:red;">xBridge Memo Charges</span></a>
-                          <?php
-                        } else if ($pdf_template_type == 'both') {
-                          ?>
-                          There will be one off RM300 Registration Fees and monthly subscriptions count once Register @ xBridge B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path . 'xBridge_B2B_Outright_and_Consignment.pdf' ?>" download ><span style="color:red;">xBridge Memo Charges</span></a>
-                          <?php
-                        } else if ($pdf_template_type == 'outright_iks') {
-                          ?>
-                          There will be one off RM200 Registration Fees and yearly subscriptions fees RM200 incur once Register. Refer to Page 1 <a href="<?php echo $defined_path . 'xBrigde_Memo_Charges_IKS_DIDR.pdf' ?>" download ><span style="color:red;">xBridge Memo Charges</span></a>
-                          <?php
-                        } else {
-                          ?>
-                          Please Contact xBridge to get your Memo Charges Details.
-                          <?php
-                        }
-                      }
+                    <input type="hidden" id="hidden_memo" name="hidden_memo" value="<?php echo $key->memo_type ?>" disabled>
+                    <?php
+                    if($pdf_template_type == 'outright' || $pdf_template_type == 'Outright' || $pdf_template_type == 'waive_outright')
+                    {
+                      ?>
+                      There will be one off RM300 Registration Fees and monthly subscriptions incur once Register. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                      <?php
                     }
-                          ?>
-                  </h5>
-                  <h5>
-                    Please contact <span class="text-bold"> xBridge Registration Team </span> @ <span><a href="mailto:register@xbridge.my">register@xbridge.my</a></span> or call us @ +60 17-715 9340 / +60 17-215 3088 should you require further clarifications on registration process and access to <span class="text-bold">xBridge B2B portal</span>.
-                  </h5>
-                </div> -->
+                    else if($pdf_template_type == 'consignment' || $pdf_template_type == 'Consign' || $pdf_template_type == 'waive_consign')
+                    {
+                      ?>
+                      There will be one off RM300 Registration Fees and monthly subscriptions count based on outlet usage once Register @ TMG B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                      <?php
+                    }
+                    else if($pdf_template_type == 'both')
+                    {
+                      ?>
+                      There will be one off RM300 Registration Fees and monthly subscriptions count once Register @ TMG B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                      <?php
+                    }
+                    else if($pdf_template_type == 'outright_iks')
+                    {
+                      ?>
+                      There will be one off RM200 Registration Fees and yearly subscriptions fees RM200 incur once Register. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                      <?php
+                    }
+                    else
+                    {
+                      ?>
+                      Please Contact xBridge Registration Team to get your Memo Charges Details.
+                      <?php
+                    }
+                  }
+                }
+                ?>
+                </h5>
+                
+                <h5>
+                Please contact <span class="text-bold"> xBridge Registration Team </span> @ <span><a href="mailto:registertmg@xbridge.my">registertmg@xbridge.my</a></span> or call us @ +6017 215 3088 / +6017 715 9340 should you require further clarifications on registration process and access to <span class="text-bold">TMG B2B portal</span>.
+                </h5>
+              </div> 
               <?php
               if ($form_status == 'New' || $form_status == 'Processing' || $form_status == 'Emailed' || $form_status == 'Registered') {
                 //$disabled = 'disabled'; 
@@ -1577,9 +1589,9 @@
         //   }
         // }
 
-        if(count >= 2)
+        if(count >= 1)
         {
-          alert('Login Account(s) maximum 2 persons.');
+          alert('Login Account(s) maximum 1 persons.');
           return;
         }
 

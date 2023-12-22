@@ -663,6 +663,55 @@ input:focus {
                   </div>
 
                   <div class="note" style="margin-left: 15px;">
+                  <h5 class="text-bold">
+                    <?php 
+                    if($register->num_rows() != 0)
+                    {
+                      foreach($register_charge_type->result() as $key)
+                      { 
+                        $memo_type = $key->memo_type;
+                        $pdf_template_type = $key->template_type;
+                        ?>
+                        <input type="hidden" id="hidden_memo" name="hidden_memo" value="<?php echo $key->memo_type ?>" disabled>
+                        <?php
+                        if($pdf_template_type == 'outright' || $pdf_template_type == 'Outright' || $pdf_template_type == 'waive_outright')
+                        {
+                          ?>
+                          There will be one off RM300 Registration Fees and monthly subscriptions incur once Register. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                          <?php
+                        }
+                        else if($pdf_template_type == 'consignment' || $pdf_template_type == 'Consign' || $pdf_template_type == 'waive_consign')
+                        {
+                          ?>
+                          There will be one off RM300 Registration Fees and monthly subscriptions count based on outlet usage once Register @ TMG B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                          <?php
+                        }
+                        else if($pdf_template_type == 'both')
+                        {
+                          ?>
+                          There will be one off RM300 Registration Fees and monthly subscriptions count once Register @ TMG B2B Portal. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                          <?php
+                        }
+                        else if($pdf_template_type == 'outright_iks')
+                        {
+                          ?>
+                          There will be one off RM200 Registration Fees and yearly subscriptions fees RM200 incur once Register. Refer to Page 1 <a href="<?php echo $defined_path.'TMG_B2B_Registration_MEMO.pdf' ?>" download ><span style="color:red;">TMG Memo Charges</span></a>
+                          <?php
+                        }
+                        else
+                        {
+                          ?>
+                          Please Contact xBridge Registration Team to get your Memo Charges Details.
+                          <?php
+                        }
+                      }
+                    }
+                    ?>
+                  </h5>
+                
+                  <h5>
+                    Please contact <span class="text-bold"> xBridge Registration Team </span> @ <span><a href="mailto:registertmg@xbridge.my">registertmg@xbridge.my</a></span> or call us @ +6017 215 3088 / +6017 715 9340 should you require further clarifications on registration process and access to <span class="text-bold">TMG B2B portal</span>.
+                  </h5>
                 
                 </div>
 
@@ -2063,7 +2112,147 @@ $(document).on('click','#completebtn',function(){
 
   var register_guid = $(this).attr('register_guid');
   var customer_guid = $(this).attr('customer_guid');
+
+  var modal = $("#medium-modal").modal();
+
+  modal.find('.modal-title').html('Template Settings');
+
+  methodd = '';
+
+  methodd +='<div class="col-md-12">';
+
+  methodd += '<div class="col-md-6"><input type="hidden" class="form-control input-sm" id="complete_register_guid" value="'+register_guid+'"/></div>';
+
+  methodd += '<div class="col-md-6"><input type="hidden" class="form-control input-sm" id="complete_customer_guid" value="'+customer_guid+'"/></div>';
+
+  methodd += '<div class="col-md-12"><span style="font-weight:bold;font-size:16px;"> Memo Type : <mark style="background-color:yellow;"><?php echo $check_template_name ?></mark> </span> </div> <div class="clearfix"></div><br> ';
+
+  methodd += '</div>';
+
+  methodd +='<div class="col-md-12">';
+
+  methodd += '<div class="col-md-12"><label>Outright Template </label> <select class="form-control select2" name="add_outright_template" id="add_outright_template"> <option value="">-Select-</option> <?php foreach($get_outright_template as $row) { ?> <option value="<?php echo $row->template_guid?>"><?php echo $row->template_name?></option> <?php } ?></select> </div>';
+
+  methodd += '<div class="col-md-6"><label>Outright Start Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_outright_start" id="add_outright_start" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd +='</div> <div class="clearfix"></div><br>';
+
+  methodd +='<div class="col-md-12">';
+
+  methodd += '<div class="col-md-12"><label>Consignment Template </label> <select class="form-control select2" name="add_consign_template" id="add_consign_template"> <option value="">-Select-</option> <?php foreach($get_consign_template as $row) { ?> <option value="<?php echo $row->template_guid?>"><?php echo $row->template_name?></option> <?php } ?></select> </div>';
+
+  methodd += '<div class="col-md-6"><label>Consignment Start Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_consign_start" id="add_consign_start" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd +='</div> <div class="clearfix"></div><br>';
+
+  methodd +='<div class="col-md-12">';
+
+  methodd += '<div class="col-md-12"><label>Cap Template </label> <select class="form-control select2" name="add_cap_template" id="add_cap_template"> <option value="">-Select-</option> <?php foreach($get_cap_template as $row) { ?> <option value="<?php echo $row->template_guid?>"><?php echo $row->template_name?></option> <?php } ?></select> </div>';
+
+  methodd += '<div class="col-md-6"><label>Cap Start Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_cap_start" id="add_cap_start" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd += '<div class="col-md-6"><label>Cap End Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_cap_end" id="add_cap_end" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd +='</div> <div class="clearfix"></div><br>';
+
+  methodd +='<div class="col-md-12">';
+
+  methodd += '<div class="col-md-12"><label>Waive Template </label> <select class="form-control select2" name="add_waive_template" id="add_waive_template"> <option value="">-Select-</option> <?php foreach($get_waive_template as $row) { ?> <option value="<?php echo $row->template_guid?>"><?php echo $row->template_name?></option> <?php } ?></select> </div>';
+
+  methodd += '<div class="col-md-6"><label>Waive Start Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_waive_start" id="add_waive_start" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd += '<div class="col-md-6"><label>Waive End Date </label><div class="input-group date"><div class="input-group-addon"> <i class="fa fa-calendar"></i> </div><input name="add_waive_end" id="add_waive_end" type="text" class="datepicker form-control input-sm" autocomplete="off" ></div></div>';
+
+  methodd +='</div>';
+
+  methodd_footer = '<p class="full-width"><span class="pull-right"><input type="button" id="update_complete_btn" class="btn btn-success" value="Create"> <input name="sendsumbit" type="button" class="btn btn-default" data-dismiss="modal" value="Close"> </span></p>';
+
+  modal.find('.modal-footer').html(methodd_footer);
+  modal.find('.modal-body').html(methodd);
+
+  setTimeout(function(){
+    $('.select2').select2();
+
+    $('#add_waive_start').change(function(){
+      var waive_date_val = $('#add_waive_start').val();
+      //alert(waive_date_val); die;
+      if(waive_date_val != '')
+      {
+        var waive_someDate = new Date(waive_date_val);
+        //var waive_dd = waive_someDate.getDate();
+        var waive_mm = waive_someDate.getMonth();
+        var waive_y = waive_someDate.getFullYear();   
+        var waive_c = new Date(waive_y + 1, waive_mm + 1 , 0);
+        var waive_cnewDate = new Date(waive_c);
+
+        var waive_result = waive_cnewDate.toLocaleDateString("fr-CA", { // you can use undefined as first argument
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+
+        $('#add_waive_end').val(waive_result);
+        $('#add_waive_end').datepicker("setDate", waive_result );
+      }
+    });//close selection
+
+    $('#add_cap_start').change(function(){
+      var date_val = $('#add_cap_start').val();
+
+      if(date_val != '')
+      {
+        var someDate = new Date(date_val);
+        var dd = someDate.getDate();
+        var mm = someDate.getMonth();
+        var y = someDate.getFullYear();   
+        var c = new Date(y + 1, mm + 1 , 0);
+        var newDate = new Date(c);
+
+        var result = newDate.toLocaleDateString("fr-CA", { // you can use undefined as first argument
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        });
+
+        $('#add_cap_end').val(result);
+        $('#add_cap_end').datepicker("setDate", result );
+      }
+    });//close selection
+
+    $('.datepicker').datepicker({
+      forceParse: false,
+      autoclose: true,
+      todayHighlight: true,
+      format: 'yyyy-mm-dd'
+    });
+  },300);
+
+});//close create modal template
+
+$(document).on('click','#update_complete_btn',function(){
+
+  var register_guid = $('#complete_register_guid').val();
+  var customer_guid = $('#complete_customer_guid').val();
   var no_reg = $('#part2_tb_count').val();
+  var add_outright_template = $('#add_outright_template').val();
+  var add_consign_template = $('#add_consign_template').val();
+  var add_cap_template = $('#add_cap_template').val();
+  var add_waive_template = $('#add_waive_template').val();
+  var outright_name = $('#select2-add_outright_template-container').attr('title');
+  var consign_name = $('#select2-add_consign_template-container').attr('title');
+  var cap_name = $('#select2-add_cap_template-container').attr('title');
+  var waive_name = $('#select2-add_waive_template-container').attr('title');
+  var add_outright_start = $('#add_outright_start').val();
+  var add_consign_start = $('#add_consign_start').val();
+  var add_cap_start = $('#add_cap_start').val();
+  var add_cap_end = $('#add_cap_end').val();
+  var add_waive_start = $('#add_waive_start').val();
+  var add_waive_end = $('#add_waive_end').val();
+  var show_confirm_outright = '';
+  var show_confirm_consign = '';
+  var show_confirm_cap = '';
+  var show_confirm_waive = '';
+  var check_memo_type = "<?php echo $check_template_name ?>";
 
   if(register_guid == '' || register_guid == 'null' || register_guid == null )
   {
@@ -2077,12 +2266,186 @@ $(document).on('click','#completebtn',function(){
     return;
   }
 
-  confirmation_modal('Registered Login Account(s) : <b>'+no_reg+'</b>?');
+  if(add_outright_template == '' && add_consign_template == '')
+  {
+    alert('Please select atleast one template.');
+    return;
+  }
+
+  if(check_memo_type == 'BOTH')
+  {
+    if(add_outright_template == '' || add_consign_template == '')
+    {
+      alert('Please select outright and consignment template.');
+      return;
+    }
+    else
+    {
+      if(add_outright_start == '' || add_consign_start == '')
+      {
+        alert('Please select outright and consignment template start date.');
+        return;
+      }
+    }
+  }
+
+  if(check_memo_type == 'OUTRIGHT')
+  {
+    if(add_consign_template != '')
+    {
+      alert('Invalid select consignment template due to is OUTRIGHT type.');
+      return;
+    }
+
+    if(add_outright_template == '')
+    {
+      alert('Please select outright template.');
+      return;
+    }
+    else
+    {
+      if(add_outright_start == '')
+      {
+        alert('Please select outright start date.');
+        return;
+      }
+    }
+  }
+
+  if(check_memo_type == 'CONSIGNMENT')
+  {
+    if(add_outright_template != '')
+    {
+      alert('Invalid select outright template due to is CONSIGNMENT type.');
+      return;
+    }
+    
+    if(add_consign_template == '')
+    {
+      alert('Please select consignment template.');
+      return;
+    }
+    else
+    {
+      if(add_consign_start == '')
+      {
+        alert('Please select consignment start date.');
+        return;
+      }
+    }
+  }
+
+  if(add_cap_template == '')
+  {
+    if(add_cap_start != '' || add_cap_end != '')
+    {
+      alert('Please remove cap start date and end date or select cap template to proceed.');
+      return;
+    }
+  }
+
+  if(add_waive_template == '')
+  {
+    if(add_waive_start != '' || add_waive_end != '')
+    {
+      alert('Please remove waive start date and end date or select waive template to proceed.');
+      return;
+    }
+  }
+
+  if(add_cap_template != '')
+  {
+    if(add_cap_start != '')
+    {
+      if(add_cap_end == '')
+      {
+        alert('Please Insert Cap End Date.');
+        return;
+      }
+    }
+    else
+    {
+      alert('Please Insert Cap Start Date.');
+      return;
+    }
+
+    if(add_cap_start != '' && add_cap_end != '')
+    {
+      if(add_cap_end < add_cap_start)
+      {
+        alert('Cap End Date cannot less than Cap Start Date');
+        return;
+      }
+    }
+
+    show_confirm_cap = '<br>Cap : <b>' +cap_name+'</b>';
+  }
+
+  if(add_waive_template != '')
+  {
+    if(add_waive_start != '')
+    {
+      if(add_waive_end == '')
+      {
+        alert('Please Insert Waive End Date.');
+        return;
+      }
+    }
+    else
+    {
+      alert('Please Insert Waive Start Date.');
+      return;
+    }
+
+    if(add_waive_start != '' && add_waive_end != '')
+    {
+      if(add_waive_end < add_waive_start)
+      {
+        alert('Waive End Date cannot less than Waive Start Date');
+        return;
+      }
+    }
+
+    show_confirm_waive = '<br>Waive : <b>' +waive_name+'</b>';
+  }
+
+  if(outright_name != '-Select-' && outright_name != '' && outright_name != null && outright_name != 'null')
+  {
+    show_confirm_outright = '<br>Outright : <b>' +outright_name+'</b>';
+  }
+
+  if(consign_name != '-Select-' && consign_name != '' && consign_name != null && consign_name != 'null')
+  {
+    show_confirm_consign = '<br>Consignment : <b>' +consign_name+'</b>';
+  }
+
+  if(outright_name != '-Select-' && outright_name != '' && outright_name != null && outright_name != 'null')
+  {
+    show_confirm_outright = '<br>Outright : <b>' +outright_name+'</b>';
+  }
+
+  if(consign_name != '-Select-' && consign_name != '' && consign_name != null && consign_name != 'null')
+  {
+    show_confirm_consign = '<br>Consignment : <b>' +consign_name+'</b>';
+  }
+
+  if(store_memo_type != 'outright_iks')
+  {
+    // var no_part = $('#participant_tb_count').val();
+    var no_part = '0';
+    var alert_confimration = '<br>Registered Training Participant(s) : <b>' +no_part+'</b>'+show_confirm_outright+''+show_confirm_consign+''+show_confirm_cap+''+show_confirm_waive+'<br>Are you sure want <b> Registered </b> ';
+  }
+  else
+  {
+    var alert_confimration = ''+show_confirm_outright+''+show_confirm_consign+''+show_confirm_cap+''+show_confirm_waive+'<br>Are you sure want <b> Registered </b>';
+  }
+
+  confirmation_modal('Registered Login Account(s) : <b>'+no_reg+'</b>'+alert_confimration+'?');
   $(document).off('click', '#confirmation_yes').on('click', '#confirmation_yes', function(){
   $.ajax({
           url:"<?php echo site_url('Registration_new/complete_status');?>",
           method:"POST",
-          data:{customer_guid:customer_guid,register_guid:register_guid},
+          data:{customer_guid:customer_guid,register_guid:register_guid,add_outright_template:add_outright_template,add_consign_template:add_consign_template,add_cap_template:add_cap_template,add_waive_template:add_waive_template,add_outright_start:add_outright_start,add_consign_start:add_consign_start,add_cap_start:add_cap_start,add_cap_end:add_cap_end,add_waive_start:add_waive_start,add_waive_end:add_waive_end},
           beforeSend:function(){
             $('.btn').button('loading');
           },

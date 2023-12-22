@@ -78,13 +78,7 @@ a:visited {
           <table class="col425" align="center" border="0" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 700px;">  
             <tr>
               <td class='h1' align="left">
-                 <?php if( $customer_name->row('acc_doc_name') != '')
-                 {
-                 ?>
-                   <?php echo str_replace('-',' ',$customer_name->row('acc_doc_name')); ?>
-                 <?php
-                 }
-                 ?>
+                TUNAS MANJA GROUP
               </td>
               <td class='h1' >
 
@@ -105,7 +99,7 @@ a:visited {
 
             <td align ='center'>
                 <h3 class="text-info">
-                   Please click on the link below and fill up the <?php echo $form_name?> for Sunshine B2B Portal.
+                   Please click on the link below and fill up the <?php echo $form_name?> for TMG B2B Portal.
                 </h3>
                 <p class="lead" align ='left' style="padding-left: 40px;">
                 <table class="col425" align="center" border="0" cellpadding="0" cellspacing="0" style="width: 70%;padding-left: 40px;">

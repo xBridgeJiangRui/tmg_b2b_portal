@@ -71,7 +71,7 @@ a:visited {
           <table width="70" align="left" border="0" cellpadding="0" cellspacing="0">  
             <tr>
               <td height="70" style="padding: 0 20px 20px 0;">
-                <img style="border-radius: 15px;" class="fix" src="https://supplier.tunasmanja.com/asset/dist/img_sunshine/icon-512.png" width="70" height="70" border="0" alt="" />
+                <img style="border-radius: 15px;" class="fix" src="https://tunasmanja.xbridge.my/asset/dist/img_sunshine/icon-512.png" width="70" height="70" border="0" alt="" />
               </td>
             </tr>
           </table>
@@ -91,7 +91,7 @@ a:visited {
                   </tr>
                   <tr>
                     <td class="h1" style="padding: 5px 0 0 0;">
-                      Tunas Manja Sdn Bhd
+                    Tunas Manja Group
                     </td>
                   </tr>
                 </table>
@@ -210,7 +210,7 @@ a:visited {
                       <table class="buttonwrapper" style="background-color:red;" border="0" cellspacing="0" cellpadding="0">
                         <tr>
                           <td height="45">
-                            <a href="https://supplier.tunasmanja.com/"><div class="button" height="45">Login Now</div></a>
+                            <a href="https://tunasmanja.xbridge.my/"><div class="button" height="45">Login Now</div></a>
                           </td>
                         </tr>
                       </table>

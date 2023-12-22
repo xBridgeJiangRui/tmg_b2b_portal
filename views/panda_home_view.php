@@ -82,24 +82,6 @@
 </div>
 
       <div class="row">
-        <div class="col-md-12">
-          <div class="box box-default">
-            <!-- head -->
-              <div class="box-header with-border">
-                <h3 class="box-title">Sales Overview</h3>
-                
-                <div class="box-tools pull-right">
-                  Date : <span><?php echo $latest_sales_datetime; ?></span>
-                  <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                </div>
-              </div>
-              <div id="sales_overview-dashboard-layout"></div>
-            <!-- ./col -->
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
         <!-- left panel -->
         <div class="col-md-6">
           <div class="box box-default">
@@ -168,33 +150,12 @@
         </div> 
       </div>
 
-      <div class="row">
-        <div class="col-md-12">
-          <div class="box">
-              <div class="box-header with-border">
-                <h3 class="box-title">Overview</h3>
-                
-                <div class="box-tools pull-right">
-                  Date : <span><?php echo $latest_sales_datetime; ?></span>
-                  <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                  </button>
-                </div>
-
-              </div>
-              <div id="overview-dashboard-layout"></div>
-          </div>
-        </div>
-      </div> 
-
 <?php //  echo var_dump($_SESSION); ?>
 </div>
 </div>
 
 <script type="text/javascript">
    $( document ).ready(function() {
-
-    get_layout_sales_overview();
-    get_layout_overview();
 
     var mandatory = "<?php echo $mandatory;?>";
     // // if(mandatory == 1)
@@ -309,7 +270,7 @@ var mandatory = "<?php echo $row->mandatory;?>";
           // var result = checkFileExist("https://file.xbridge.my/b2b-pdf/ann_doc/"+acc_guid+"/"+guid+"/"+cut_pdf[key]+".pdf");
           // if (result == true) 
           // {
-            virtual_path = "https://file.xbridge.my/b2b-pdf/ann_doc/"+acc_guid+"/"+guid+"/";
+            virtual_path = "https://tunasmanja.xbridge.my/b2b-pdf/tmg/ann_doc/"+acc_guid+"/"+guid+"/";
           // }
           // else
           // {
@@ -336,58 +297,3 @@ var mandatory = "<?php echo $row->mandatory;?>";
   }
 </script>
 
-<script type="text/javascript">
-
-  function get_layout_sales_overview(option = 'consign'){
-
-    $.ajax({
-        url: '<?php echo site_url('Dashboard/sales_overview_dashboard');?>',
-        dataType: 'html',
-        // type: 'POST',
-        data: {
-          'option': option
-        },
-        success: function(html) {    
-
-          $.ajax({
-            url: '<?php echo site_url('Dashboard/realtime_dashboard_date');?>',
-            dataType: 'html',
-            success: function(html1) {
-              $('#current_datetime_sales_overview').html(html1);      
-              $('#sales_overview-dashboard-layout').html(html);
-            },
-          });
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-        }
-      });
-
-    $('#sales_overview-dashboard-layout').removeClass('hidden');
-  }
-
-</script>
-
-<script type="text/javascript">
-
-  function get_layout_overview(option = 'consign'){
-
-    $.ajax({
-        url: '<?php echo site_url('Dashboard/overview_dashboard');?>',
-        dataType: 'html',
-        // type: 'POST',
-        data: {
-          'option': option
-        },
-        success: function(html) {         
-          $('#overview-dashboard-layout').html(html);
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-        }
-      });
-
-    $('#overview-dashboard-layout').removeClass('hidden');
-  }
-
-</script>

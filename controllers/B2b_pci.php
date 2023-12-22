@@ -17,6 +17,7 @@ class b2b_pci extends CI_Controller
         //$this->load->model('General_model');
         $this->load->model('Datatable_model');
         $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
+        $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
     }
 
     public function index()
@@ -232,15 +233,8 @@ class b2b_pci extends CI_Controller
                     $tab['total_af_tax'] = "<span class='pull-right'>" . number_format($row->total_af_tax, 2) . "</span>";
                     $tab['status'] = $row->status;
 
-                    if ($this->session->userdata('customer_guid') == '1F90F5EF90DF11EA818B000D3AA2CAA9' || $this->session->userdata('customer_guid') == '907FAFE053F011EB8099063B6ABE2862' || $this->session->userdata('customer_guid') == 'D361F8521E1211EAAD7CC8CBB8CC0C93') 
-                    {
-                        // bataras , Gmart , everrise
-                        $tab['button'] = "<a href=" . site_url('b2b_pci/pci_child') . "?trans=" . $row->inv_refno . "&loc=" . $_SESSION['pci_loc'] . " style='float:left' class='btn btn-sm btn-info' role='button'><span class='glyphicon glyphicon-eye-open'></span></a>";
-                        $tab['box'] = '<input type="checkbox" class="data-check" value="' . $row->inv_refno . '">';
-                    } else {
-                        $tab['button'] = "<a href=" . site_url('b2b_pci/pci_child') . "?trans=" . $row->promo_refno . "&loc=" . $_SESSION['pci_loc'] . " style='float:left' class='btn btn-sm btn-info' role='button'><span class='glyphicon glyphicon-eye-open'></span></a>";
-                        $tab['box'] = '<input type="checkbox" class="data-check" value="' . $row->promo_refno . '">';
-                    }
+                    $tab['button'] = "<a href=" . site_url('b2b_pci/pci_child') . "?trans=" . $row->inv_refno . "&loc=" . $_SESSION['pci_loc'] . " style='float:left' class='btn btn-sm btn-info' role='button'><span class='glyphicon glyphicon-eye-open'></span></a>";
+                    $tab['box'] = '<input type="checkbox" class="data-check" value="' . $row->inv_refno . '">';
 
                     $data[] = $tab;
                 }
@@ -350,7 +344,7 @@ class b2b_pci extends CI_Controller
     {
         $refno = $_REQUEST['refno'];
         $customer_guid = $this->session->userdata('customer_guid');
-        $url = $this->jasper_ip ."/jasperserver/rest_v2/reports/reports/PandaReports/Backend_Promotion/promo_claim_inv.pdf?refno=".$refno; // PCI
+        $url = $this->jasper_ip . $this->jasper_path. "/Backend_Promotion/promo_claim_inv.pdf?refno=".$refno; // PCI
         //print_r($url); die;
 
         if( $customer_guid == '1F90F5EF90DF11EA818B000D3AA2CAA9' ||  $customer_guid == '907FAFE053F011EB8099063B6ABE2862' ||  $customer_guid == 'D361F8521E1211EAAD7CC8CBB8CC0C93')

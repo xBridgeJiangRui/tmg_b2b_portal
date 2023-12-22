@@ -70,6 +70,9 @@
       <a class="btn btn-app " style="color:grey" id="btn_view_complete">
         <i class="fa fa-check-square"></i> Completed 
       </a>
+      <a class="btn btn-app " style="color:grey" id="btn_view_cancel">
+        <i class="fa fa-remove"></i> Cancelled 
+      </a>
 
       <!-- <a class="btn btn-app" style="color:#D73925" onclick="filter_status(2)" title="Rejected">
         <i class="fa fa-window-close"></i> Rejected 
@@ -135,6 +138,34 @@
                 <th>Posted By</th>
                 <th>PO No</th> 
                 <th>Status</th> 
+              </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row class_cancel_list">
+      <div class="col-md-12 col-xs-12">
+        <div class="box" style="overflow-x: auto; white-space: nowrap;">
+          <div class="box-header with-border">
+            <h3 class="box-title"> Cancelled Proposed PO List <span class="pill_button"><?php echo $retailer; ?></span></h3>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body" >
+
+            <table id="view_cancel_list" class="table table-bordered table-hover" width="100%" cellspacing="0">
+              <thead style="white-space: nowrap;">
+              <tr>
+                <th>No</th>
+                <th>Ref No</th>
+                <th>Supplier</th>
+                <th>Delivery Date</th>
+                <th>Created By</th>
+                <th>Cancelled By</th> 
               </tr>
               </thead>
               <tbody>
@@ -458,10 +489,11 @@
           }},
           {"data" : "", render:function( data, type, row ){
 
+            var refno = row['refno'];
             var transmain_guid = row['transmain_guid'];
             var url = "<?php echo site_url('Propose_po/propose_details?id=');?>" + transmain_guid;
 
-            return '<a class="btn btn-xs btn-primary" id="edit_btn" href="' + url + '"><i class="fa fa-edit"></i> Edit</a>';
+            return '<a class="btn btn-xs btn-primary" id="edit_btn" href="'+url+'"><i class="fa fa-edit"></i> Edit</a> <a class="btn btn-xs btn-danger" id="cancel_btn" doc_refno="'+refno+'" transmain_guid="'+transmain_guid+'"><i class="fa fa-remove"></i> Cancel</a>';
 
           }},
         ],
@@ -509,7 +541,133 @@
       $('.class_complete_list_header').removeClass('hidden');
       $('.class_complete_list_child').removeClass('hidden');
       $('.class_pending_list').addClass('hidden');
+      $('.class_cancel_list').addClass('hidden');
     }
+
+    var table = $('#view_cancel_list').DataTable({
+        columnDefs: [
+          { className: "aligncenter", targets: [0] },
+          { className: "alignright", targets: [] },
+          { className: "alignleft", targets: '_all' },
+          // { width: '1%', targets: [0,3,6] },
+          // { width: '12%', targets: [1,4,5] },
+        ],
+        filter      : true,
+        // pageLength  : 10,
+        processing  : true,
+        serverSide  : true,
+        paging      : true,
+        lengthChange: true,
+        lengthMenu  : [ [10, 25, 50, 100, 99999999], ['10', '25', '50', '100', 'ALL'] ],
+        searching   : true,
+        ordering    : true,
+        info        : true,
+        autoWidth   : false,
+        bPaginate: true, 
+        bFilter: true, 
+        // sScrollY: "80vh", 
+        // sScrollX: "100%", 
+        sScrollXInner: "100%", 
+        bScrollCollapse: true,
+        orderCellsTop: true,
+        fixedHeader: true,
+        ajax: {
+          url : "<?php echo site_url('Propose_po/view_header');?>",
+          method: "POST",
+          data:{datatable_load:1,retailer:retailer,doc_status:'CANCELLED'},
+        },
+        columns: [
+          {"data": null, render: function (data, type, row, meta) {
+            // Calculate and return the row index based on the visible rows
+            var settings = meta.settings;
+            var currentPage = settings._iDisplayStart;
+            return currentPage + meta.row + 1;
+          }},
+          {"data" : "", render:function( data, type, row ){
+
+            var element = '';
+            var transmain_guid = row['transmain_guid'];
+            var refno = row['refno'];
+            var url = "<?php echo site_url('Propose_po/propose_details?id=');?>" + transmain_guid;
+
+            element += '<a href="' + url + '">'+refno+'</a>';
+
+            return element;
+
+          }},
+          {"data" : "", render:function( data, type, row ){
+
+            var supplier_code = row['supplier_code'];
+            var supplier_name = row['supplier_name'];
+
+            return supplier_code + " - " + supplier_name;
+
+          }},
+          {"data" : "", render:function( data, type, row ){
+
+            var delivery_date = row['delivery_date'];
+            var date = new Date(delivery_date);
+            var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            var dayAbbreviation = daysOfWeek[date.getDay()];
+
+            return delivery_date + "</br>" + dayAbbreviation;
+
+          }},
+          {"data" : "", render:function( data, type, row ){
+
+            var created_by = row['created_by'];
+            var created_at = row['created_at'];
+
+            return created_by + "</br>" + created_at;
+
+          }},
+          {"data" : "", render:function( data, type, row ){
+
+            var updated_by = row['updated_by'];
+            var updated_at = row['updated_at'];
+
+            return updated_by + "</br>" + updated_at;
+
+          }},
+        ],
+        initComplete: function () {
+          var api = this.api();
+          api.columns().eq(0).each(function (colIdx) {
+
+            var cell = $('.filters th').eq(
+                $(api.column(colIdx).header()).index()
+              );
+
+            var title = $(cell).text();
+            var dataTable = $('#view_pending_list').DataTable();
+            var columnCells = dataTable.column(colIdx).nodes();
+            var columnSize = $(columnCells[0]).width();
+
+            if (colIdx == 0 || colIdx == 6) { 
+              $(cell).html('');
+            }else{
+              $(cell).html('<input type="text" class="form-control" style="width:'+ columnSize +'px;" placeholder="' + title + '" />');
+            }
+
+             // On every keypress in this input
+             $('input',$('.filters th').eq($(api.column(colIdx).header()).index())).off('keyup change').on('change', function (e) {
+                              
+              // Get the search value
+              $(this).attr('title', $(this).val());
+              var regexr = '({search})';
+              var cursorPosition = this.selectionStart;
+              
+              // Search the column for that value
+              api.column(colIdx).search(this.value != '' ? regexr.replace('{search}', '(((' + this.value + ')))') : '', this.value != '', this.value == '').draw();
+            }).on('keyup', function (e) {
+              
+              e.stopPropagation();
+              $(this).trigger('change');
+              $(this).focus()[0].setSelectionRange(cursorPosition, cursorPosition);
+            });
+          });
+        },
+    });
 
     $('#view_complete_list thead tr').clone(true).addClass('filters-complete').appendTo('#view_complete_list thead');
 
@@ -744,15 +902,18 @@
         "bScrollCollapse": true,
       }
     );
-
+    
     $('.class_complete_list').addClass('hidden');
+    $('.class_cancel_list').addClass('hidden');
 
     $(document).on('click','#btn_view_pending',function(){
 
       $('#btn_view_pending').addClass('active');
       $('#btn_view_complete').removeClass('active');
+      $('#btn_view_cancel').removeClass('active');
 
       $('.class_complete_list').addClass('hidden');
+      $('.class_cancel_list').addClass('hidden');
       $('.class_pending_list').removeClass('hidden');
 
       $('.class_complete_list_header').addClass('hidden');
@@ -768,8 +929,10 @@
 
       $('#btn_view_complete').addClass('active');
       $('#btn_view_pending').removeClass('active');
+      $('#btn_view_cancel').removeClass('active');
 
       $('.class_pending_list').addClass('hidden');
+      $('.class_cancel_list').addClass('hidden');
       $('.class_complete_list').removeClass('hidden');
 
       $('.class_complete_list_header').addClass('hidden');
@@ -778,6 +941,65 @@
       var url = window.location.href;
       var updatedUrl = url.split('?')[0];
       window.history.replaceState(null, null, updatedUrl);
+
+    });
+
+    $(document).on('click','#btn_view_cancel',function(){
+
+      $('#btn_view_cancel').addClass('active');
+      $('#btn_view_complete').removeClass('active');
+      $('#btn_view_pending').removeClass('active');
+
+      $('.class_pending_list').addClass('hidden');
+      $('.class_complete_list').addClass('hidden');
+      $('.class_cancel_list').removeClass('hidden');
+
+      $('.class_complete_list_header').addClass('hidden');
+      $('.class_complete_list_child').addClass('hidden');
+
+      var url = window.location.href;
+      var updatedUrl = url.split('?')[0];
+      window.history.replaceState(null, null, updatedUrl);
+
+    });
+
+    $(document).on('click','#cancel_btn',function(){
+
+      var guid = $(this).attr('transmain_guid');
+      var doc_refno = $(this).attr('doc_refno');
+
+      Swal.fire({
+        title: 'Confirm cancel this proposed document?',
+        html: '<span style="font-size:12px"><b>'+doc_refno+'</b></span>',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, confirm!',
+        cancelButtonText: 'No, cancel',
+      }).then((result) => {
+
+        if (result.value) {
+
+          $.ajax({
+            url:"<?php echo site_url('Propose_po/update_header_info') ?>",
+            method:"POST",
+            data:{guid:guid,doc_status:'CANCELLED'},
+            beforeSend:function(){
+              $('.btn').button('loading');
+            },
+            success:function(data)
+            {
+              Swal.fire(
+                'Successfully cancel the document',
+                '',
+                'success'
+              );
+              
+              $('.btn').button('reset');
+              location.reload(true);
+            }
+          });
+        }
+      });
 
     });
 

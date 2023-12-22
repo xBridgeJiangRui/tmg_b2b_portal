@@ -16,9 +16,8 @@ class Supplier_registration extends CI_Controller
     $customer_guid = $register->row('customer_guid');
     //print_r($customer_guid); die;
 
-    $file_config_acceptance_path = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'b2b_pdf', 'b2b_pdf_path', 'B2BPDF');
-    $acceptance_path = $file_config_acceptance_path.'Letter_of_acceptance_by_suppliers.pdf';
-    $acceptance_path = '';
+    $file_config_acceptance_path = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'online_form', 'acpt_path', 'ACPTPDF');
+    $acceptance_path = $file_config_acceptance_path.'TMG_ACCEPTANCE_FORM.pdf';
     //$acceptance_path = "/b2b-pdf/blast_pdf/Letter_of_acceptance_by_suppliers.pdf.pdf";
     //$acceptance_path = file_get_contents($acceptance_path);
 
@@ -175,15 +174,9 @@ class Supplier_registration extends CI_Controller
 
     $get_supp = $this->db->query("SELECT supplier_guid FROM register_new b WHERE b.`register_guid` = '$register_guid'");
 
-    $get_user_group = $this->db->query("SELECT user_group_guid,user_group_name FROM lite_b2b.set_user_group WHERE group_info_status = '1'");
+    $get_user_group = $this->db->query("SELECT user_group_guid,user_group_name FROM lite_b2b.set_user_group WHERE group_info_status >= '1'");
 
     if($get_user_group->num_rows() == 0)
-    {
-      echo "<script> alert('Please Contact Support. Invalid User Group Found.');</script>";
-      echo "<script> document.location='" . base_url() . "index.php/' </script>";
-      exit();
-    }
-    else if($get_user_group->num_rows() > 1)
     {
       echo "<script> alert('Please Contact Support. Invalid User Group Found.');</script>";
       echo "<script> document.location='" . base_url() . "index.php/' </script>";
@@ -767,6 +760,7 @@ class Supplier_registration extends CI_Controller
         $user_mapping_supplier_guid = $row->supplier_guid;
         $create_user_guid = $row->user_guid;
 
+        // why need check group_info_status is due to exlcude out admin outright / consign and user
         $check_is_admin_user_exists = $this->db->query("SELECT b.user_group_guid,CONCAT(b.user_id,' - ',d.supplier_name ,' - ',c.user_group_name,'\n') AS concat_user_info FROM lite_b2b.set_supplier_user_relationship a
         INNER JOIN lite_b2b.set_user b
         ON a.user_guid = b.user_guid
@@ -779,7 +773,7 @@ class Supplier_registration extends CI_Controller
         WHERE a.supplier_guid = '$user_mapping_supplier_guid' 
         AND a.customer_guid = '$customer_guid'
         AND a.user_guid = '$create_user_guid'
-        AND c.group_info_status NOT IN ('1')
+        AND c.group_info_status NOT IN ('1','4','5')
         GROUP BY b.user_guid,b.acc_guid")->result_array();
   
         if(count($check_is_admin_user_exists) > 0 )
@@ -968,12 +962,13 @@ class Supplier_registration extends CI_Controller
         AND a.customer_guid = b.acc_guid
         INNER JOIN lite_b2b.set_user_group c
         ON b.user_group_guid = c.user_group_guid
+        AND c.admin_active = '1'
         INNER JOIN lite_b2b.set_supplier d
         ON a.supplier_guid = d.supplier_guid
         WHERE a.supplier_guid = '$user_mapping_supplier_guid' 
         AND a.customer_guid = '$customer_guid'
         AND a.user_guid = '$create_user_guid'
-        AND c.group_info_status NOT IN ('1')
+        AND c.group_info_status NOT IN ('1','4','5')
         GROUP BY b.user_guid,b.acc_guid")->result_array();
   
         if(count($check_is_admin_user_exists) > 0 )

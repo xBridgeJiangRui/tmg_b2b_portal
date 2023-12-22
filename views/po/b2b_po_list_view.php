@@ -99,10 +99,6 @@
         <!-- <button class="btn btn-app" data-toggle="modal" data-target="#postatusmodal"><i class="fa fa-file-text-o"></i>Check PO Status</button> -->
       <?php } ?>
 
-      <div style="margin-top: 5px; margin-bottom: 10px;">
-        <span class="blinker">Once the PO is accepted, supplier shall proceed to deliver the stock based on the stipulated quantity, pricing and other delivery terms and conditions. </span> 
-      </div>
-
     </div>
     <!-- filter by -->
 

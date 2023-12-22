@@ -666,11 +666,8 @@ LIMIT 5 ");
             }
             ?>
 
-            <?php
-            if (in_array('PPANEL', $_SESSION['module_code'])) {
+            <?php if (in_array('VUAMT', $_SESSION['module_code'])) {
             ?>
-              <?php if (in_array('VUAMT', $_SESSION['module_code'])) {
-              ?>
               <li <?php if (preg_match("/User_account_setting/i", $this->uri->segment(1)))
                     echo 'class="treeview active"'; ?>>
                   <a href="#">
@@ -718,27 +715,52 @@ LIMIT 5 ");
             }
             ?>
 
-            <li <?php if (preg_match("/b2b_po/i", $this->uri->segment(1)))
-                    echo 'class="treeview active"'; ?>>
+            <?php if (in_array('VPD', $_SESSION['module_code'])) { ?>
+              <li class="treeview">
                 <a href="#">
-                  <i class="fa fa-file-text"></i>
-                  <span>Purchase Order</span>
+                  <i class="fa fa-object-group"></i>
+                  <span>Proposed Document</span>
                   <span class="pull-right-container">
                     <i class="fa fa-angle-left pull-right"></i>
                   </span>
                 </a>
                 <ul class="treeview-menu">
-                  <!-- <?php
-                  if (in_array('VPO', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_po_2') ?>"><i class="fa fa-circle-o"></i>Old Purchase Order (PO)</a></li>
-                  <?php } ?> -->
 
-                  <?php
-                  if (in_array('VPO', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('b2b_po') ?>"><i class="fa fa-circle-o"></i>Purchase Order (PO)</a></li>
-                  <?php } ?>
+                  <li class="treeview">
+                    <a href="<?php echo site_url('Propose_po/propose_record') ?>">
+                      <i class="fa fa-circle-o"></i>
+                      <span>Purchase Order (PO)</span>
+                      <span class="pull-right-container">
+                      </span>
+                    </a>
+                  </li>
+
+                  <!-- <li class="treeview">
+                    <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
+                      <i class="fa fa-circle-o"></i>
+                      <span>Cost Change</span>
+                      <span class="pull-right-container">
+                      </span>
+                    </a>
+                  </li>
+
+                  <li class="treeview">
+                    <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
+                      <i class="fa fa-circle-o"></i>
+                      <span>Purchase Promotion</span>
+                      <span class="pull-right-container">
+                      </span>
+                    </a>
+                  </li>
+
+                  <li class="treeview">
+                    <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
+                      <i class="fa fa-circle-o"></i>
+                      <span>SKU Listing</span>
+                      <span class="pull-right-container">
+                      </span>
+                    </a>
+                  </li> -->
 
                 </ul>
               </li>
@@ -747,22 +769,72 @@ LIMIT 5 ");
             <?php
             if (in_array('PPANEL', $_SESSION['module_code'])) {
             ?>
-              <li <?php if (preg_match("/b2b_gr/i", $this->uri->segment(1)) || preg_match("/b2b_grda/i", $this->uri->segment(1)))
+              <li <?php if (preg_match("/b2b_po/i", $this->uri->segment(1)) || preg_match("/b2b_gr/i", $this->uri->segment(1)) || preg_match("/b2b_prdncn/i", $this->uri->segment(1)) || preg_match("/panda_return_collection/i", $this->uri->segment(1)))
                     echo 'class="treeview active"'; ?>>
                 <a href="#">
                   <i class="fa fa-tasks"></i>
-                  <span>Outright Settlement</span>
+                  <span>Transactions</span>
                   <span class="pull-right-container">
                     <i class="fa fa-angle-left pull-right"></i>
                   </span>
                 </a>
                 <ul class="treeview-menu">
+                  
+                  <?php
+                  if (in_array('VPO', $_SESSION['module_code'])) {
+                  ?>
+                    <li><a href="<?php echo site_url('b2b_po') ?>"><i class="fa fa-circle-o"></i>Purchase Order (PO)</a></li>
+                  <?php } ?>
+
                   <?php
                   if (in_array('VGR', $_SESSION['module_code'])) {
                   ?>
                     <li><a href="<?php echo site_url('b2b_gr') ?>"><i class="fa fa-circle-o">
                         </i>Goods Received Note (GRN)</a></li>
                   <?php } ?>
+
+                  <?php
+                  if (in_array('VRB', $_SESSION['module_code'])) {
+
+                    $get_strb_valid_view = $this->db->query("SELECT a.* FROM lite_b2b.acc_settings a WHERE a.customer_guid = '" . $_SESSION['customer_guid'] . "' AND a.strb_start_date IS NOT NULL;
+                    ")->result_array();
+
+                    if(count($get_strb_valid_view) == 1)
+                    {
+                      ?>
+                      <li><a href="<?php echo site_url('panda_return_collection') ?>"><i class="fa fa-circle-o"></i>Stock Return Batch Document(RB)</a></li>
+                      <?php 
+                    }
+                    else if($_SESSION['user_group_name'] == "SUPER_ADMIN" || $_SESSION['user_group_name'] == 'CUSTOMER_ADMIN_TESTING_USE')
+                    {
+                      ?> 
+                      <li><a href="<?php echo site_url('panda_return_collection') ?>"><i class="fa fa-circle-o"></i>Stock Return Batch Document(RB)</a></li>
+                      <?php 
+                    }
+                  } ?>
+
+                  <?php
+                  if (in_array('VPRDN', $_SESSION['module_code'])) {
+                  ?>
+                    <li><a href="<?php echo site_url('b2b_prdncn') ?>"><i class="fa fa-circle-o"></i>Purchase Return DN/CN (PRDN/CN)</a></li>
+                  <?php } ?>
+
+                </ul>
+              </li>
+            <?php } ?>
+
+            <?php if (in_array('VTDPPANEL', $_SESSION['module_code'])) {
+            ?>
+              <li <?php if (preg_match("/b2b_gr_download/i", $this->uri->segment(1)) || preg_match("/b2b_grda/i", $this->uri->segment(1)) || preg_match("/b2b_prdncn/i", $this->uri->segment(1)) || preg_match("/b2b_pdncn/i", $this->uri->segment(1)) || preg_match("/b2b_pci/i", $this->uri->segment(1)) || preg_match("/b2b_di/i", $this->uri->segment(1)) ||  preg_match("/b2b_si/i", $this->uri->segment(1)))
+                    echo 'class="treeview active"'; ?>>
+                <a href="#">
+                  <i class="fa fa-download"></i>
+                  <span>To Download</span>
+                  <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                  </span>
+                </a>
+                <ul class="treeview-menu">
 
                   <?php
                   if (in_array('VTGR', $_SESSION['module_code'])) {
@@ -775,23 +847,7 @@ LIMIT 5 ");
                   ?>
                     <li><a href="<?php echo site_url('b2b_grda') ?>"><i class="fa fa-circle-o"></i>Goods Received Diff Advice (GRDA)</a></li>
                   <?php } ?>
-                </ul>
-              </li>
-            <?php } ?>
 
-            <?php
-            if (in_array('PPANEL', $_SESSION['module_code'])) {
-            ?>
-              <li <?php if (preg_match("/b2b_prdncn/i", $this->uri->segment(1)) || preg_match("/b2b_pdncn/i", $this->uri->segment(1)))
-                    echo 'class="treeview active"'; ?>>
-                <a href="#">
-                  <i class="fa fa-truck"></i>
-                  <span>Return To Vendor</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
                   <?php
                   if (in_array('VPRDN', $_SESSION['module_code'])) {
                   ?>
@@ -803,89 +859,15 @@ LIMIT 5 ");
                   ?>
                     <li><a href="<?php echo site_url('b2b_pdncn') ?>"><i class="fa fa-circle-o"></i>Purchase DN/CN (PDN/CN)</a></li>
                   <?php } ?>
-                </ul>
-              </li>
-            <?php } ?>
-
-              <li <?php if (preg_match("/b2b_pci/i", $this->uri->segment(1)) || preg_match("/b2b_di/i", $this->uri->segment(1)))
-                    echo 'class="treeview active"'; ?>>
-                <a href="#">
-                  <i class="fa fa-download"></i>
-                  <span>To Download</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
 
                   <li><a href="<?php echo site_url('b2b_pci') ?>"><i class="fa fa-circle-o"></i>Promotion Claim Tax Invoice (PCI)</a></li>
 
                   <li><a href="<?php echo site_url('b2b_di') ?>"><i class="fa fa-circle-o"></i>Display Incentive Tax Invoice (DI)</a></li>
 
-                </ul>
-              </li>
-
-            <?php if (in_array('VTDPPANEL_remove', $_SESSION['module_code'])) {
-            ?>
-              <li <?php if (preg_match("/panda_pdncn/i", $this->uri->segment(1)) || preg_match("/panda_pci/i", $this->uri->segment(1)) ||  preg_match("/panda_di/i", $this->uri->segment(1)))
-                    echo 'class="treeview active"'; ?>>
-                <a href="#">
-                  <i class="fa fa-download"></i>
-                  <span>To Download</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
-
                   <?php
-
-                  if (in_array('VTGR', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_gr_download') ?>"><i class="fa fa-circle-o"></i>Goods Received Note (GRN)</a></li>
-                  <?php } ?>
-
-                  <?php
-
-                  if (in_array('VGRDA', $_SESSION['module_code']) && $_SESSION['customer_guid'] != '13EE932D98EB11EAB05B000D3AA2838A') {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_grda') ?>"><i class="fa fa-circle-o"></i>Goods Received Diff Advice (GRDA)</a></li>
-                  <?php } ?>
-
-                  <?php
-                  if (in_array('VTPRDN', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_prdncn') ?>"><i class="fa fa-circle-o"></i>Purchase Return DN/CN (PRDN/CN)</a></li>
-                  <?php } ?>
-
-                  <?php
-
-                  if (in_array('VPDNCN', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_pdncn') ?>"><i class="fa fa-circle-o"></i>Purchase DN/CN (PDN/CN)</a></li>
-                  <?php } ?>
-
-                  <?php
-
-                  if (in_array('VPCI', $_SESSION['module_code'])) {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_pci') ?>"><i class="fa fa-circle-o"></i>Promotion Claim Tax Invoice (PCI)</a></li>
-                    <!-- promo_taxinv -->
-                  <?php } ?>
-
-                  <?php
-
-                  if (in_array('VDI', $_SESSION['module_code']) && $_SESSION['customer_guid'] != 'D361F8521E1211EAAD7CC8CBB8CC0C93') {
-                  ?>
-                    <li><a href="<?php echo site_url('panda_di') ?>"><i class="fa fa-circle-o"></i>Display Incentive Tax Invoice (DI)</a></li>
-                    <!-- `discheme_taxinv` -->
-                  <?php } ?>
-
-                  <?php
-                  if (in_array('VSI', $_SESSION['module_code']) && ($_SESSION['customer_guid'] == '8D5B38E931FA11E79E7E33210BD612D3' || $_SESSION['customer_guid'] == '1F90F5EF90DF11EA818B000D3AA2CAA9' )) {
+                  if (in_array('VSI', $_SESSION['module_code'])) {
                   ?>
                     <li><a href="<?php echo site_url('b2b_si') ?>"><i class="fa fa-circle-o"></i>Sale Invoice (SI)</a></li>
-                    <!-- `discheme_taxinv` -->
                   <?php } ?>
                 </ul>
               </li>
@@ -952,68 +934,6 @@ LIMIT 5 ");
               }
             }
             ?>
-            <?php
-            if (in_array('VJR', $_SESSION['module_code']) && $_SESSION['customer_guid'] != '13EE932D98EB11EAB05B000D3AA2838A') {
-            ?>
-              <!-- <span id="jasper_menu"></span> -->
-            <?php
-            }
-            ?>
-
-            <?php if (in_array('ORPT', $_SESSION['module_code'])) {; ?>
-              <li class="treeview">
-                <a href="#">
-                  <i class="fa fa-map-o"></i>
-                  <span>Report</span>
-                  <span class="pull-right-container">
-                    <i class="fa fa-angle-left pull-right"></i>
-                  </span>
-                </a>
-                <ul class="treeview-menu">
-
-                  <li class="treeview">
-                    <a href="<?php echo site_url('Article_report/report') ?>?report_type=sum_daily_list">
-                      <i class="fa fa-circle-o"></i>
-                      <span>Daily Sales By Supplier</span>
-                      <span class="pull-right-container">
-                      </span>
-                    </a>
-                  </li>
-
-                  <?php if (in_array('CS', $_SESSION['module_code'])) {; ?>
-                    <li class="treeview">
-                      <a href="<?php echo site_url('Consignment_b2b_report/consignment_sum_daily_list') ?>">
-                        <i class="fa fa-circle-o"></i>
-                        <span>Daily Sales By Consignment</span>
-                        <span class="pull-right-container">
-                        </span>
-                      </a>
-                    </li>
-                  <?php }; ?>
-
-                  <?php if($this->session->userdata('user_group_name') != 'CONSIGNMENT_GROUP'){ ?>
-                    <li class="treeview">
-                      <a href="<?php echo site_url('Article_report/report') ?>?report_type=supplier_daily_inventory">
-                        <i class="fa fa-circle-o"></i>
-                        <span>Supplier Daily Inventory</span>
-                        <span class="pull-right-container">
-                        </span>
-                      </a>
-                    </li>
-                  <?php } ?>
-                  
-                  <li class="treeview">
-                    <a href="<?php echo site_url('Article_report/report') ?>?report_type=supplier_article_information_query">
-                      <i class="fa fa-circle-o"></i>
-                      <span>Supplier Information Query</span>
-                      <span class="pull-right-container">
-                      </span>
-                    </a>
-                  </li>
-
-                </ul> 
-              </li> 
-            <?php }; ?>
 
             <?php if (in_array('CS', $_SESSION['module_code'])) {; ?>
               <li class="treeview">
@@ -1029,7 +949,7 @@ LIMIT 5 ");
                     <li class="treeview">
                       <a href="<?php echo site_url('Consignment_report/consignment_sales_statement_by_supcode?status=&loc=HQ&period_code=' . date("Y-m", strtotime("-1 month"))) ?>">
                         <i class="fa fa-circle-o"></i>
-                        <span>Consignment Settlement</span>
+                        <span>Consignment Sales Statement</span>
                         <span class="pull-right-container">
                         </span>
                       </a>
@@ -1060,7 +980,7 @@ LIMIT 5 ");
                     <li class="treeview">
                       <a href="<?php echo site_url('Consignment_b2b_report?link=consignment_sales_report_b2b') ?>">
                         <i class="fa fa-circle-o"></i>
-                        <span>Consignment Sales Report B2B</span>
+                        <span>Consignment Sales Report</span>
                         <span class="pull-right-container">
                         </span>
                       </a>
@@ -1069,7 +989,7 @@ LIMIT 5 ");
                     <li class="treeview">
                       <a href="<?php echo site_url('Consignment_b2b_report?link=consignment_sales_report_summary_b2b') ?>">
                         <i class="fa fa-circle-o"></i>
-                        <span>Consignment Sales Report Summary B2B</span>
+                        <span>Consignment Sales Report Summary</span>
                         <span class="pull-right-container">
                         </span>
                       </a>
@@ -1296,7 +1216,6 @@ LIMIT 5 ");
                   }
                   ?>
 
-                  <!-- 
                   <?php
                   if (in_array('VSUP', $_SESSION['module_code'])) {
                   ?>
@@ -1312,6 +1231,7 @@ LIMIT 5 ");
                   }
                   ?>
 
+                  <!-- 
                   <?php
                   if (in_array('VSUP', $_SESSION['module_code'])) {
                   ?>
@@ -1852,14 +1772,14 @@ LIMIT 5 ");
           </span>
         </a>
         <ul class="treeview-menu">
-          <!-- <li class="treeview">
+          <li class="treeview">
             <a href="<?php echo site_url('faq') ?>">
               <i class="fa fa-circle-o"></i>
               <span>Frequently Asked Questions(FAQ)</span>
               <span class="pull-right-container">
               </span>
             </a>
-          </li> -->
+          </li>
 
           <li class="treeview">
             <a href="<?php echo site_url('manual_guide') ?>">
@@ -1927,57 +1847,6 @@ LIMIT 5 ");
         <?php
             }
       ?>
-
-        <?php if (in_array('VPD', $_SESSION['module_code'])) { ?>
-          <li class="treeview">
-            <a href="#">
-              <i class="fa fa-file-archive-o"></i>
-              <span>Proposed Document</span>
-              <span class="pull-right-container">
-                <i class="fa fa-angle-left pull-right"></i>
-              </span>
-            </a>
-            <ul class="treeview-menu">
-
-              <li class="treeview">
-                <a href="<?php echo site_url('Propose_po/propose_record') ?>">
-                  <i class="fa fa-circle-o"></i>
-                  <span>Purchase Order (PO)</span>
-                  <span class="pull-right-container">
-                  </span>
-                </a>
-              </li>
-
-              <li class="treeview">
-                <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
-                  <i class="fa fa-circle-o"></i>
-                  <span>Cost Change</span>
-                  <span class="pull-right-container">
-                  </span>
-                </a>
-              </li>
-
-              <li class="treeview">
-                <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
-                  <i class="fa fa-circle-o"></i>
-                  <span>Purchase Promotion</span>
-                  <span class="pull-right-container">
-                  </span>
-                </a>
-              </li>
-
-              <li class="treeview">
-                <a style="color: gray; cursor: not-allowed; text-decoration: none;" href="#">
-                  <i class="fa fa-circle-o"></i>
-                  <span>SKU Listing</span>
-                  <span class="pull-right-container">
-                  </span>
-                </a>
-              </li>
-
-            </ul>
-          </li>
-        <?php } ?>
 
       <?php if (in_array('REG', $_SESSION['module_code']) || $_SESSION['user_group_name'] == "SUPER_ADMIN") {
       ?>

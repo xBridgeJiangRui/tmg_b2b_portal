@@ -29,7 +29,7 @@ class User_account_setting extends CI_Controller {
 
             if($_SESSION['user_group_name'] == 'SUPER_ADMIN')
             {
-                $get_supplier = $this->db->query("SELECT d.supplier_guid,d.supplier_name FROM 
+                $get_supplier = $this->db->query("SELECT d.supplier_guid,d.supplier_name,e.transfer_b2b FROM 
                 lite_b2b.set_user a
                 INNER JOIN lite_b2b.set_supplier_user_relationship b
                 ON a.user_guid = b.user_guid
@@ -39,6 +39,9 @@ class User_account_setting extends CI_Controller {
                 AND a.acc_guid = c.customer_guid
                 INNER JOIN lite_b2b.set_supplier d
                 ON c.supplier_guid = d.supplier_guid
+                INNER JOIN lite_b2b.register_new e
+                ON d.supplier_guid = e.supplier_guid
+                AND a.acc_guid = e.customer_guid
                 WHERE a.acc_guid = '$customer_guid'
                 GROUP BY d.supplier_guid
                 ORDER BY d.supplier_name ASC
@@ -46,7 +49,7 @@ class User_account_setting extends CI_Controller {
             }
             else
             {
-                $get_supplier = $this->db->query("SELECT d.supplier_guid,d.supplier_name FROM 
+                $get_supplier = $this->db->query("SELECT d.supplier_guid,d.supplier_name,e.transfer_b2b FROM 
                 lite_b2b.set_user a
                 INNER JOIN lite_b2b.set_supplier_user_relationship b
                 ON a.user_guid = b.user_guid
@@ -56,6 +59,9 @@ class User_account_setting extends CI_Controller {
                 AND a.acc_guid = c.customer_guid
                 INNER JOIN lite_b2b.set_supplier d
                 ON c.supplier_guid = d.supplier_guid
+                INNER JOIN lite_b2b.register_new e
+                ON d.supplier_guid = e.supplier_guid
+                AND a.acc_guid = e.customer_guid
                 WHERE a.user_guid = '$user_guid' 
                 AND a.acc_guid = '$customer_guid'
                 GROUP BY d.supplier_guid
@@ -903,7 +909,7 @@ class User_account_setting extends CI_Controller {
         $updated_at = $this->db->query("SELECT NOW() as now")->row('now');
         $customer_name = $this->db->query("SELECT * FROM lite_b2b.acc WHERE acc_guid = '$send_customer_guid'");
         $get_user_account_maintenance = $this->db->query("SELECT * FROM lite_b2b.acc_settings WHERE customer_guid = '$send_customer_guid'")->row('user_account_maintenance');
-        $url = 'https://b2b.xbridge.my';
+        $url = 'https://tunasmanja.xbridge.my';
         $supplier_detail = $this->db->query("SELECT * FROM lite_b2b.set_supplier WHERE supplier_guid = '$send_supplier_guid'");
         $supplier_code = $this->db->query("SELECT GROUP_CONCAT(DISTINCT supplier_group_name) as vendor_code FROM lite_b2b.set_supplier_group WHERE supplier_guid = '$send_supplier_guid' AND customer_guid = '$send_customer_guid'");
 
@@ -943,7 +949,7 @@ class User_account_setting extends CI_Controller {
              
             $reset_link = $this->db->query("SELECT * FROM lite_b2b.reset_pass_list WHERE reset_guid = '$reset_guid'");
     
-            $reset_url = 'https://b2b.xbridge.my/index.php/Key_in/key_in?si='.$reset_link->row('reset_guid').'&ug='.$reset_link->row('user_guid');
+            $reset_url = 'https://tunasmanja.xbridge.my/index.php/Key_in/key_in?si='.$reset_link->row('reset_guid').'&ug='.$reset_link->row('user_guid');
 
             $email_data = array(
                 'reset_detail' => $reset_link,
@@ -1312,7 +1318,12 @@ class User_account_setting extends CI_Controller {
 
             $get_acc = $this->db->query("SELECT a.acc_guid,a.acc_name FROM lite_b2b.acc a WHERE a.isactive = '1' AND a.acc_guid IN ('$valid_customer_guid') ORDER BY a.acc_name ASC");
 
-            $get_supplier = $this->db->query("SELECT a.supplier_name FROM lite_b2b.set_supplier a WHERE a.supplier_guid = '$process_supplier_guid'");
+            $get_supplier = $this->db->query("SELECT a.supplier_name,b.transfer_b2b FROM lite_b2b.set_supplier a 
+            INNER JOIN lite_b2b.register_new b
+            ON a.supplier_guid = b.supplier_guid
+            AND b.customer_guid = '$process_customer_guid'
+            WHERE a.supplier_guid = '$process_supplier_guid'
+            GROUP BY a.supplier_guid");
 
             $get_registered_count = $this->db->query("SELECT aa.acc_guid,aa.acc_name,COUNT(aa.user_name) AS count_data
             FROM
@@ -1365,6 +1376,7 @@ class User_account_setting extends CI_Controller {
                 'get_notification_report' => $get_notification_report->result(),
                 'acc_name' => $get_acc->row('acc_name'),
                 'supplier_name' => $get_supplier->row('supplier_name'),
+                'transfer_b2b' => $get_supplier->row('transfer_b2b'),
                 'get_supplier_user' => $get_supplier_user->result(),
                 'process_customer_guid' => $process_customer_guid,
                 'process_supplier_guid' => $process_supplier_guid,
@@ -2334,8 +2346,11 @@ class User_account_setting extends CI_Controller {
             // AND d.supplier_guid = '$process_supplier_guid'
             // GROUP BY d.supplier_guid");
 
-            $get_supplier = $this->db->query("SELECT a.supplier_guid,a.supplier_name 
+            $get_supplier = $this->db->query("SELECT a.supplier_guid,a.supplier_name,b.transfer_b2b
             FROM lite_b2b.set_supplier a
+            INNER JOIN lite_b2b.register_new b
+            ON a.supplier_guid = b.supplier_guid
+            AND b.customer_guid = '$process_customer_guid'
             WHERE a.supplier_guid = '$process_supplier_guid'
             AND a.isactive = '1'
             GROUP BY a.supplier_guid");
@@ -2459,6 +2474,7 @@ class User_account_setting extends CI_Controller {
                 'tab_1' => $tab_1,
                 'tab_3' => $tab_3,
                 'tab_summary' => $tab_summary,
+                'transfer_b2b' => $get_supplier->row('transfer_b2b'),
             );
 
             $this->load->view('header');
@@ -3065,6 +3081,13 @@ class User_account_setting extends CI_Controller {
 
             $get_acc = $this->db->query("SELECT a.acc_guid,a.acc_name FROM lite_b2b.acc a WHERE a.isactive = '1' AND a.acc_guid = '$customer_guid' ORDER BY a.acc_name ASC");
 
+            $get_supplier = $this->db->query("SELECT a.supplier_name,b.transfer_b2b FROM lite_b2b.set_supplier a 
+            INNER JOIN lite_b2b.register_new b
+            ON a.supplier_guid = b.supplier_guid
+            AND b.customer_guid = '$process_customer_guid'
+            WHERE a.supplier_guid = '$process_supplier_guid'
+            GROUP BY a.supplier_guid");
+
             $get_registered_count = $this->db->query("SELECT aa.acc_guid,aa.acc_name,COUNT(aa.user_name) AS count_data
             FROM
             ( SELECT e.acc_guid,e.acc_name,d.supplier_guid,d.supplier_name,a.user_name 
@@ -3099,6 +3122,7 @@ class User_account_setting extends CI_Controller {
                 'tab_1' => $tab_1,
                 'tab_2' => $tab_2,
                 'tab_3' => $tab_3,
+                'transfer_b2b' => $get_supplier->row('transfer_b2b'),
             );
 
             $this->load->view('header');
@@ -3615,6 +3639,13 @@ class User_account_setting extends CI_Controller {
 
     public function retrieve_account_count($process_customer_guid,$process_supplier_guid,$user_id)
     {
+        $get_transfer_b2b = $this->db->query("SELECT a.supplier_name,b.transfer_b2b FROM lite_b2b.set_supplier a 
+        INNER JOIN lite_b2b.register_new b
+        ON a.supplier_guid = b.supplier_guid
+        AND b.customer_guid = '$process_customer_guid'
+        WHERE a.supplier_guid = '$process_supplier_guid'
+        GROUP BY a.supplier_guid")->row('transfer_b2b');
+
         $get_registered_count = $this->db->query("SELECT aa.acc_guid,aa.acc_name,COUNT(aa.user_name) AS count_data
         FROM
         ( SELECT e.acc_guid,e.acc_name,d.supplier_guid,d.supplier_name,a.user_name 
@@ -3634,21 +3665,42 @@ class User_account_setting extends CI_Controller {
         AND a.hide_admin = '0'
         GROUP BY a.user_id,a.acc_guid ) aa
         GROUP BY aa.acc_name")->row('count_data');
-
-        if(($get_registered_count - 1) % 5 == 0)
+        // why need minus - 1 is the one new created user id.
+        if($get_transfer_b2b == '1')
         {
-            $get_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') as guid")->row('guid');
-
-            $data = array(
-                'guid' => $get_guid,
-                'customer_guid' => $process_customer_guid,
-                'supplier_guid' => $process_supplier_guid,
-                'user_count' => $get_registered_count,
-                'created_at' => $this->db->query("SELECT NOW() as updated_at")->row('updated_at'),
-                'created_by' => $user_id,
-            );
-
-            $this->db->insert('lite_b2b.set_supplier_user_count',$data);
+            if(($get_registered_count - 1) >= 2 )
+            {
+                $get_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') as guid")->row('guid');
+    
+                $data = array(
+                    'guid' => $get_guid,
+                    'customer_guid' => $process_customer_guid,
+                    'supplier_guid' => $process_supplier_guid,
+                    'user_count' => $get_registered_count,
+                    'created_at' => $this->db->query("SELECT NOW() as updated_at")->row('updated_at'),
+                    'created_by' => $user_id,
+                );
+    
+                $this->db->insert('lite_b2b.set_supplier_user_count',$data);
+            }
+        }
+        else
+        {
+            if(($get_registered_count - 1) % 5 == 0)
+            {
+                $get_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') as guid")->row('guid');
+    
+                $data = array(
+                    'guid' => $get_guid,
+                    'customer_guid' => $process_customer_guid,
+                    'supplier_guid' => $process_supplier_guid,
+                    'user_count' => $get_registered_count,
+                    'created_at' => $this->db->query("SELECT NOW() as updated_at")->row('updated_at'),
+                    'created_by' => $user_id,
+                );
+    
+                $this->db->insert('lite_b2b.set_supplier_user_count',$data);
+            }
         }
 
         return;       

@@ -18,7 +18,6 @@ class b2b_di extends CI_Controller
         $this->load->model('Datatable_model');
         $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
         $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
-        $this->api_url = '127.0.0.1/rest_b2b/index.php';
     }
 
     public function index()

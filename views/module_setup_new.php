@@ -235,7 +235,7 @@
                       if(in_array('D1MS',$_SESSION['module_code']))
                       {
                         ?>  
-                        <button title="Delete" onclick="confirm_modal('<?php echo site_url('module_setup/delete'); ?>?guid=<?php echo $row->module_group_guid ?>&table=set_module_group&col_guid=module_group_guid&delete=4')" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#delete" data-name="<?php echo $row->module_group_name?>" ><i class="glyphicon glyphicon-trash"></i></button>
+                        <button title="Delete" onclick="confirm_modal('<?php echo site_url('module_setup_new/delete'); ?>?guid=<?php echo $row->module_group_guid ?>&table=set_module_group&col_guid=module_group_guid&delete=4')" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#delete" data-name="<?php echo $row->module_group_name?>" ><i class="glyphicon glyphicon-trash"></i></button>
                         <?php
                       }
                       ?>
@@ -360,7 +360,7 @@
                         if(in_array('D1MS',$_SESSION['module_code']))
                         {
                           ?>  
-                          <button title="Delete" onclick="confirm_modal('<?php echo site_url('module_setup/delete'); ?>?guid=<?php echo $row->user_module_guid ?>&table=set_user_module&col_guid=user_module_guid&delete=1')" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#delete" data-name="User Module" ><i class="glyphicon glyphicon-trash"></i></button>
+                          <button title="Delete" onclick="confirm_modal('<?php echo site_url('module_setup_new/delete'); ?>?guid=<?php echo $row->user_module_guid ?>&table=set_user_module&col_guid=user_module_guid&delete=1')" type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#delete" data-name="User Module" ><i class="glyphicon glyphicon-trash"></i></button>
                           <?php
                         }
                         ?>

@@ -19,7 +19,8 @@ class general extends CI_Controller
         $this->load->library('mytcpdf');   
         $this->load->library('myfpdi'); */
         $this->local_ip = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'general_doc', 'local_ip', 'LIP');
-        $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'general_doc', 'jasper_invoice_ip', 'GDJIIP');
+        $this->jasper_ip = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_invoice_ip','GDJIIP');
+        $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
     }
 
     public function view_status()
@@ -2047,7 +2048,7 @@ class general extends CI_Controller
         if(count($list_id) >= 150 )
         {   
             
-            $link_url = 'https://b2b.xbridge.my/index.php/'.$frommodule.'/direct_print_merge_post_method';
+            $link_url = 'https://tunasmanja.xbridge.my/index.php/'.$frommodule.'/direct_print_merge_post_method';
                 ////site_url($frommodule . '/direct_print_merge_post_method?loc=' . $loc . '&pdfname=' . $pdf_name);
 
             $data = array();
@@ -2762,27 +2763,47 @@ class general extends CI_Controller
         $list_id = $this->input->post('id');
         $list_id = explode(",", $list_id);
         $type = strtoupper($this->input->post('type'));
+        $customer_guid = $_SESSION['customer_guid'];
+        $user_guid = $_SESSION['user_guid'];
+        $xrefno = '';
         foreach ($list_id as $count => $row) {
             if ($type == 'PO') {
-                $check_scode = $this->db->query("SELECT supplier_code from b2b_summary.pomain_info where refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('supplier_code');
-                $url = $this->jasper_ip . "/jasperserver/rest_v2/reports/reports/PandaReports/Backend_PO/main_jrxml.pdf?refno=".$row; // po
+                //$check_scode = $this->db->query("SELECT supplier_code from b2b_summary.pomain_info where refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('supplier_code');
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_PO/main_jrxml.pdf?refno=".$row; // po
+                //print_r($url); die;
                 $frommodule = 'b2b_po';
             } else if ($type == 'GRN') {
-                // $check_scode = $this->db->query("SELECT code from b2b_summary.grmain where refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('code');
+                //$check_scode = $this->db->query("SELECT supplier_code from b2b_summary.grmain_info where refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('supplier_code');
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_GRN/gr_supplier_copy.pdf?refno=".$row; // po
+                $frommodule = 'b2b_gr_download';
             } else if ($type == 'GRDA') {
-                // $check_scode = $this->db->query("SELECT ap_sup_code from b2b_summary.grmain_dncn where refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('ap_sup_code');
+                //$check_scode = $this->db->query("SELECT a.supplier_code from b2b_summary.grmain_info a INNER JOIN b2b_summary.grmain_dncn_info ON a.refno = b.refno AND a.customer_guid = b.customer_guid where b.refno = '$row' and b.customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('supplier_code');
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_GRN/GRDA.pdf?refno=".$row; // po
+                $frommodule = 'b2b_grda';
+            } else if ($type == 'PRDNCN') {
+                $get_doc_type = $this->db->query("SELECT a.type FROM b2b_summary.dbnotemain_info a WHERE a.refno = '$row' AND customer_guid = '$customer_guid' UNION ALL SELECT 'CN' AS `type` FROM b2b_summary.cnnotemain_info a WHERE a.refno = '$row' AND customer_guid = '$customer_guid'")->row('type');
+
+                if($get_doc_type == 'CN')
+                {
+                    $url = $this->jasper_ip . $this->jasper_path ."/Backend_PRCN/main_jrxml.pdf?refno=".$row;
+                    $frommodule = 'b2b_prcn';
+                }
+                else 
+                {
+                    $url = $this->jasper_ip . $this->jasper_path ."/Backend_PRDN/main_jrxml.pdf?refno=".$row;
+                    $frommodule = 'b2b_prdn';
+                }
+                
+            } else if ($type == 'PDNCN') {
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_PDN_PCN/main_jrxml.pdf?refno=".$row;
+                $frommodule = 'b2b_pdncn';
             } else if ($type == 'PCI') {
-                // if ($this->session->userdata('customer_guid') != '1F90F5EF90DF11EA818B000D3AA2CAA9' && $this->session->userdata('customer_guid') != '907FAFE053F011EB8099063B6ABE2862') {
-                //     $check_scode = $this->db->query("SELECT sup_code from b2b_summary.promo_taxinv where promo_refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('sup_code');
-                // } else {
-                //     $check_scode = $this->db->query("SELECT sup_code from b2b_summary.promo_taxinv where inv_refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('sup_code');
-                // }
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_Promotion/promo_claim_inv.pdf?refno=".$row; // PCI
+                $frommodule = 'b2b_pci';
             } else if ($type == 'DI') {
-                // $check_scode = $this->db->query("SELECT sup_code from b2b_summary.discheme_taxinv where inv_refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('sup_code');
+                $url = $this->jasper_ip . $this->jasper_path ."/Backend_DIncentives/display_incentive_report.pdf?refno=".$row;
+                $frommodule = 'b2b_di';
             } else if ($type == 'SI') {
-                $check_scode = $this->db->query("SELECT code from b2b_summary.simain_info WHERE refno = '$row' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('code');
-                $url = $this->jasper_ip . "/jasperserver/rest_v2/reports/reports/PandaReports/Backend_SI/si_landscape.pdf?refno=" . $row;
-                $frommodule = 'b2b_si';
             }
 
             $curl[$count] = curl_init();
@@ -2806,9 +2827,44 @@ class general extends CI_Controller
             $response[$count] = curl_exec($curl[$count]);
             $pdf->addPDF(VarStream::createReference($response[$count]), 'all');
             curl_close($curl);
+
+            $xrefno .= $row . ',';
         }
 
+        $xxrefno = rtrim($xrefno, ",");
         $pdf_name = 'MERGE_' . uniqid();
+ 
+        if(!in_array('!SUPPMOV',$_SESSION['module_code']))
+        {
+            $link_url = 'https://tunasmanja.xbridge.my/index.php/general/trigger_update_supp_movement';
+
+            $data = array();
+
+            $data = array(
+                'trans' => $xxrefno,
+                'pdfname' => $pdf_name,
+                'type' => $type,
+                'movement_customer_guid' => $customer_guid,
+                'movement_user_guid' => $user_guid
+            );
+
+            $cuser_name = 'ADMIN';
+            $cuser_pass = '1234';
+
+            $ch = curl_init($link_url);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Api-KEY: 123456")); 
+            curl_setopt($ch, CURLOPT_USERPWD, "$cuser_name:$cuser_pass");
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data); 
+            $result = curl_exec($ch);
+            $output = json_decode($result);
+            // print_r($result); die;
+            curl_close($ch);  
+        }
+
         ob_clean();
         $test = $pdf->merge('browser', $pdf_name . '.pdf'); // generate the file
         // ob_end_flush();
@@ -2856,5 +2912,227 @@ class general extends CI_Controller
             );    
             echo json_encode($data);   
         }
+    }
+
+    public function trigger_update_supp_movement()
+    {
+        $customer_guid = $this->input->post('movement_customer_guid');
+        $user_guid = $this->input->post('movement_user_guid');
+        $refno = $this->input->post('trans');
+        $pdf_name = $this->input->post('pdfname');
+        $type = $this->input->post('type');
+
+        $implode_refno = explode(',',$refno);
+        // $select_refno = "'".implode("','",$implode_refno)."'";
+
+        if($type == 'PO') 
+        {
+            $from_module = 'b2b_po';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!SUPPMOV',$_SESSION['module_code']))
+                {                    
+                    $this->db->query("UPDATE b2b_summary.pomain_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_po'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'GRN') 
+        {
+            $from_module = 'b2b_gr_download';
+
+            foreach($implode_refno as $row2)
+            {
+                if (!in_array('!SUPPMOV', $_SESSION['module_code'])) {
+                    $this->db->query("UPDATE b2b_summary.grmain_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+    
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_grn'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'GRDA') 
+        {
+            $from_module = 'b2b_grda';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!GRDASUPPMOV',$_SESSION['module_code']))
+                {
+                    $this->db->query("UPDATE b2b_summary.grmain_dncn_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+    
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_grda'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'PRDNCN') 
+        {
+            $get_doc_type = $this->db->query("SELECT a.type FROM b2b_summary.dbnotemain_info a WHERE a.refno = '$row' AND customer_guid = '$customer_guid' UNION ALL SELECT 'CN' AS `type` FROM b2b_summary.cnnotemain_info a WHERE a.refno = '$row' AND customer_guid = '$customer_guid'")->row('type');
+
+            if($get_doc_type == 'CN')
+            {
+
+                $from_module = 'b2b_prcn';
+            }
+            else 
+            {
+
+                $from_module = 'b2b_prdn';
+            }
+
+            if(!in_array('!SUPPMOV',$_SESSION['module_code']))
+            {                    
+                if($get_doc_type == 'CN')      
+                {    
+                    foreach($implode_refno as $row2)
+                    {   
+                        $this->db->query("UPDATE b2b_summary.cnnotemain_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+
+                        $this->db->query("REPLACE into supplier_movement select         
+                        upper(replace(uuid(),'-','')) as movement_guid      
+                        , '$customer_guid'      
+                        , '$user_guid'      
+                        , 'printed_PRCN'        
+                        , '$from_module'        
+                        , '$row2'     
+                        , now()     
+                        ");     
+                    }
+                }       
+                else        
+                {       
+                    foreach($implode_refno as $row2)
+                    {
+                        $this->db->query("UPDATE b2b_summary.dbnotemain_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+
+                        $this->db->query("REPLACE into supplier_movement select         
+                        upper(replace(uuid(),'-','')) as movement_guid      
+                        , '$customer_guid'      
+                        , '$user_guid'      
+                        , 'printed_PRDN'        
+                        , '$from_module'        
+                        , '$row2'     
+                        , now()     
+                        ");     
+                    }
+                }  
+            }  
+            
+        } 
+        else if ($type == 'PDNCN') 
+        {
+            $from_module = 'b2b_pdncn';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!PDNCNSUPPMOV',$_SESSION['module_code']))
+                {
+                    $this->db->query("UPDATE b2b_summary.cndn_amt_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN('','viewed') ");
+    
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_pdncn'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'PCI') 
+        {
+            $from_module = 'b2b_pci';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!PCISUPPMOV',$_SESSION['module_code']))
+                {
+                    $this->db->query("UPDATE b2b_summary.promo_taxinv_info set status = 'printed' where customer_guid ='$customer_guid' and inv_refno = '$row2' and status IN ('','viewed') ");
+                    
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_PCI'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'DI') 
+        {
+            $from_module = 'b2b_di';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!SUPPMOV',$_SESSION['module_code']))
+                {
+                    $this->db->query("UPDATE b2b_summary.discheme_taxinv_info set status = 'printed' where customer_guid ='$customer_guid' and inv_refno = '$row2' and status IN ('','viewed') ");
+    
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_PCI'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        } 
+        else if ($type == 'SI') 
+        {
+            $from_module = 'b2b_si';
+
+            foreach($implode_refno as $row2)
+            {
+                if(!in_array('!SUPPMOV',$_SESSION['module_code']))
+                {                    
+                    $this->db->query("UPDATE b2b_summary.simain_info set status = 'printed' where customer_guid ='$customer_guid' and refno = '$row2' and status IN ('','viewed') ");
+
+                    $this->db->query("REPLACE into supplier_movement select 
+                    upper(replace(uuid(),'-','')) as movement_guid
+                    , '$customer_guid'
+                    , '$user_guid'
+                    , 'printed_simain'
+                    , '$from_module'
+                    , '$row2'
+                    , now()
+                    ");
+                }
+            }
+        }
+
+        // print_r($doc_type); die;
     }
 }

@@ -18,7 +18,7 @@ height:150px;
       <div class="box box-default" style ="text-align: center;" >
         <!-- <div class="box-header with-border"> -->
           <h1 style ="text-align: center;"><i class="fa fa-check-circle" style="color:green;font-size:3.0em;"></i></span></h1>
-          <h2 style ="text-align: center;">Thank you for Registering <b>Sunshine B2B Portal</b>.</h2>
+          <h2 style ="text-align: center;">Thank you for Registering <b>TMG B2B Portal</b>.</h2>
         <!-- </div> -->
         <div class="box-body">
           <h3>Your <?php echo $form_name ?> will be processed within 1 day.

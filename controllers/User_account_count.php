@@ -46,12 +46,16 @@ class User_account_count extends CI_Controller {
             // $supplier_guid = $this->input->post("supplier_guid");
             // $selected_customer_guid = $this->input->post("selected_customer_guid");
 
-            $query_data = "SELECT b.acc_name,c.supplier_name,a.user_count,a.invoice_number,a.created_at,a.created_by,a.guid,a.customer_guid,a.supplier_guid 
+            $query_data = "SELECT b.acc_name,c.supplier_name,a.user_count,a.invoice_number,a.created_at,a.created_by,a.guid,a.customer_guid,a.supplier_guid,d.transfer_b2b 
             FROM lite_b2b.set_supplier_user_count a
             INNER JOIN lite_b2b.acc b
             ON a.customer_guid = b.acc_guid
             INNER JOIN lite_b2b.set_supplier c
             ON a.supplier_guid = c.supplier_guid
+            INNER JOIN lite_b2b.register_new d
+            ON c.supplier_guid = d.supplier_guid
+            AND b.acc_guid = d.customer_guid
+            GROUP BY a.guid
             ORDER BY a.created_at ASC";
 
             // print_r($query_data); die;
@@ -78,6 +82,7 @@ class User_account_count extends CI_Controller {
                     $tab['invoice_number'] = $row->invoice_number;
                     $tab['created_at'] = $row->created_at;
                     $tab['created_by'] = $row->created_by;
+                    $tab['transfer_b2b'] = $row->transfer_b2b;
 
                     $data[] = $tab;
                 }

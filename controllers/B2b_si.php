@@ -17,6 +17,8 @@ class b2b_si extends CI_Controller
         $this->load->model('Po_model');
         $this->load->model('General_model');
         $this->load->model('Datatable_model');
+        $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
+        $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
     }
 
     public function index()
@@ -266,8 +268,8 @@ class b2b_si extends CI_Controller
     {
         $refno = $_REQUEST['refno'];
         //print_r($refno); die;
-        $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
-        $url = $this->jasper_ip."/jasperserver/rest_v2/reports/reports/PandaReports/Backend_SI/si_landscape.pdf?refno=".$refno;
+
+        $url = $this->jasper_ip . $this->jasper_path. "/Backend_SI/si_landscape.pdf?refno=".$refno;
 
         $check_code = $this->db->query("SELECT code from b2b_summary.simain_info where refno = '$refno' and customer_guid = '" . $_SESSION['customer_guid'] . "'")->row('code');
 

@@ -1,5 +1,15 @@
 <style>
 
+@keyframes blink-button {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.blinking-button {
+  animation: blink-button 1s infinite;
+}
+
 #floatingButton {
   position: fixed;
   top: 60px; /* Adjust the top distance as needed */
@@ -174,7 +184,7 @@ input[type="number"] {
 <br>
   <div class="col-md-12">
 
-    <a class="btn btn-app" href="<?php echo site_url('Propose_po/propose_record') ?>" style="color:grey" title="All">
+    <a class="btn btn-app no_hide" href="<?php echo site_url('Propose_po/propose_record') ?>" style="color:grey" title="All">
       <i class="fa fa-list"></i> View Proposed Doc 
     </a>
 
@@ -182,7 +192,7 @@ input[type="number"] {
       <i class="fa fa-check"></i> Submit 
     </a>
 
-    <a class="btn btn-app pull-right" id="btn_create_new" style="color:#000000">
+    <a class="btn btn-app pull-right no_hide" id="btn_create_new" style="color:#000000">
       <i class="fa fa-plus-circle"></i> Create New
     </a>
 
@@ -198,7 +208,7 @@ input[type="number"] {
       <div class="box box-default">
         <!-- head -->
         <div class="box-header with-border">
-          <h3 class="box-title">Proposed Purchase Order</h3><br>
+          <h3 class="box-title">Proposed Purchase Order</h3><?php echo ($doc_status == 'CANCELLED') ? '<a class="btn btn-sm btn-danger no_hide blinking-button" style="margin-left: 1vw"> <b>This Document has been Cancelled</b></a>' : '' ?><br>
           <div class="box-tools pull-right">
             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
           </div>
@@ -249,7 +259,7 @@ input[type="number"] {
               <div class="col-md-2">
 
                 <?php if(isset($_GET['id'])){ ?>
-                  <input type="text" id="delivery_date" name="delivery_date" value="<?php echo date_format($delivery_date, 'Y-m-d D') ?>" class="form-control pull-right" disabled>
+                  <input type="datetime" id="delivery_date" name="delivery_date" autocomplete="off" placeholder="yyyy-mm-dd" value="<?php echo date_format($delivery_date, 'Y-m-d D') ?>" class="form-control pull-right">
                 <?php }else{ ?>
                   <input type="datetime" id="delivery_date" name="delivery_date" autocomplete="off" placeholder="yyyy-mm-dd" class="form-control pull-right" disabled>
                 <?php } ?>
@@ -280,7 +290,7 @@ input[type="number"] {
 
               <div class="col-md-1"><b>Remark</b></div>
               <div class="col-md-5">
-                <textarea name="remark_h1" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
+                <textarea name="remark_h" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
               </div>
 
               <div class="clearfix"></div><br>
@@ -306,7 +316,7 @@ input[type="number"] {
 
                 <div class="col-md-1"><b>Remark</b></div>
                 <div class="col-md-5">
-                  <textarea name="remark_h1" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
+                  <textarea name="remark_h" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
                 </div>
 
                 <div class="clearfix"></div><br>
@@ -334,7 +344,7 @@ input[type="number"] {
 
                   <div class="col-md-1"><b>Remark</b></div>
                   <div class="col-md-5">
-                    <textarea name="remark_h2" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
+                    <textarea name="remark_h" style="height: 10vh; width: 36vw;"><?php echo isset($_GET['id']) ? $remark_h : '' ?></textarea>
                   </div>
 
                   <div class="clearfix"></div><br>
@@ -906,6 +916,7 @@ $(document).ready(function() {
     var outright_code = $('#outright_code').val();
     var outright_location = $('#outright_location').val();
     var delivery_date = $('#delivery_date').val().split('  ')[0].trim();
+    var remark = $('textarea[name="remark_h"]').val();
 
     if(retailer == '' || retailer == null)
     {
@@ -970,7 +981,7 @@ $(document).ready(function() {
     $.ajax({
       url:"<?php echo site_url('Propose_po/create_header') ?>",
       method:"POST",
-      data:{retailer:retailer,outright_code:outright_code,outright_location:outright_location,delivery_date:delivery_date},
+      data:{retailer:retailer,outright_code:outright_code,outright_location:outright_location,delivery_date:delivery_date,remark:remark},
       beforeSend:function(){
         $('.btn').button('loading');
       },
@@ -3907,7 +3918,7 @@ $(document).ready(function() {
 
   var timeoutIdremark;
 
-  $(document).on('input', 'textarea[name="remark_h1"],textarea[name="remark_h2"]', function(event){
+  $(document).on('input', 'textarea[name="remark_h"]', function(event){
 
     var have_id = '<?php echo isset($_GET['id']) ? 1 : 0 ?>';
     var guid = '<?php echo $_GET["id"] ?>';
@@ -3915,11 +3926,7 @@ $(document).ready(function() {
 
     clearTimeout(timeoutIdremark);
 
-    if(have_id == 1){
-      var remark_value = $('textarea[name="remark_h2"]').val();
-    }else{
-      var remark_value = $('textarea[name="remark_h1"]').val();
-    }
+    var remark_value = $('textarea[name="remark_h"]').val();
 
     timeoutIdremark = setTimeout(function() {
       $.ajax({
@@ -4041,7 +4048,13 @@ $(document).ready(function() {
   });
 
   $(function() {
+
+    var current_date = "<?php echo date('Y-m-d') ?>";
+    var date = "<?php echo isset($_GET['id']) ? $delivery_date : date('Y-m-d') ?>";
+
     $('input[name="delivery_date"]').daterangepicker({
+      startDate: date,
+      minDate: current_date,
       locale: {
         format: 'YYYY-MM-DD  ddd'
       },
@@ -4052,3 +4065,24 @@ $(document).ready(function() {
     // $(this).find('[name="delivery_date"]').val("");
   });
 </script>
+
+<?php if($doc_status == 'CANCELLED'){ ?>
+  <script text="text/javascript">
+
+  $(document).ready(function() {
+    $('.btn:not(.no_hide)').hide();
+    $('input[type="text"]').prop('disabled', true);
+    $('input[type="number"]').prop('disabled', true);
+    $('input[type="datetime"]').prop('disabled', true);
+    $('textarea').prop('disabled', true);
+
+    $(document).on('init.dt', 'table', function () {
+        $(this).find('select').prop('disabled', true);
+        $(this).find('input[type="text"]').prop('disabled', true);
+        $(this).find('input[type="number"]').prop('disabled', true);
+        $(this).find('input[type="datetime"]').prop('disabled', true);
+    });
+  });
+
+  </script>
+<?php } ?>

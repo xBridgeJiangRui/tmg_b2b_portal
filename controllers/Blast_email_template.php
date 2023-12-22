@@ -22,7 +22,11 @@ class Blast_email_template extends CI_Controller
   public function index()
   {
     if ($this->session->userdata('loginuser') == true && $this->session->userdata('userid') != '' && $_SESSION['user_logs'] == $this->panda->validate_login()) {
-      $get_email_group = $this->db->query("SELECT a.guid,CONCAT(a.type,' - ',a.email_group_name,' - ',a.description) AS description FROM lite_b2b.set_email a WHERE a.activate = '1'");
+      $get_email_group = $this->db->query("SELECT a.guid,CONCAT(a.type,' - ',a.email_group_name,' - ',a.description) AS description 
+      FROM lite_b2b.set_email a INNER JOIN lite_b2b.`set_email_group` b
+      ON a.guid = b.email_group_guid
+      WHERE a.activate = '1'
+      GROUP BY a.guid");
 
       $get_acc = $this->db->query("SELECT  a.acc_guid,a.acc_name FROM lite_b2b.acc a WHERE a.isactive = '1' ORDER BY acc_name ASC");
 
@@ -313,6 +317,9 @@ class Blast_email_template extends CI_Controller
 
   public function send_the_template()
   {
+    ini_set('max_execution_time', 0); 
+    ini_set('memory_limit','1048M');
+
     $mail_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
     $template_guid = $this->input->post('template_guid');
     $email_group = $this->input->post('email_group');
@@ -339,36 +346,53 @@ class Blast_email_template extends CI_Controller
         AND a.`is_active` = '1'
         LIMIT 1");
 
+    //$get_email_list = $this->lite_b2b_model->get_email_user_list($supplier_guid, $customer_guid)->result_array();
+
     $is_pdf =  $get_email_template_info->row('is_pdf');
-        
+    
     if($is_pdf == '1')
     {
-      $url_link = $this->db->query("SELECT a.`url_link`
+      $attachment_file_path = $this->db->query("SELECT a.`url_link`
       FROM lite_b2b.`email_template_pdf` AS a
       WHERE a.`template_guid` = '$template_guid'
       LIMIT 1")->row('url_link');
 
-      $attachment_file_path = $_SERVER["DOCUMENT_ROOT"].$url_link;
-
       $filename = basename($attachment_file_path);
     }
 
-    //$get_email_list = $this->lite_b2b_model->get_email_user_list($supplier_guid, $customer_guid)->result_array();
-
     if($email_group != '')
     {
-      $get_email_list = $this->db->query("SELECT a.`type`, a.`email_group_name`, a.`description`, b.`category`, b.`customer_guid`, b.`supplier_guid`, b.`user_guid`, b.`user_email`, b.`user_email`, b.`email_name`,b.cc_email FROM lite_b2b.`set_email` AS a INNER JOIN lite_b2b.`set_email_group` AS b ON a.`guid` = b.`email_group_guid` WHERE a.guid = '$email_group' AND b.`is_active` = '1'")->result_array();
+      $get_email_list = $this->db->query("SELECT a.`type`, a.`email_group_name`, a.`description`, b.`customer_guid`, b.`supplier_guid`, b.`user_email`, b.cc_email FROM lite_b2b.`set_email` AS a INNER JOIN lite_b2b.`set_email_group` AS b ON a.`guid` = b.`email_group_guid` WHERE a.guid = '$email_group' AND b.`is_active` = '1'")->result_array();
 
       // send email by each
-      foreach ($get_email_list as $key => $value) {
-        $to_email[] = $value['user_email'];
 
-        $cc_email_list =  explode(',',$value['cc_email']);
-      }
-      if($add_new_email != '')
+      if(count($get_email_list) > 0)
       {
-        $to_email = array_merge( $to_email , $add_new_email );
+        foreach ($get_email_list as $key => $value) {
+          $to_email[] = $value['user_email'];
+  
+          if($value['cc_email'] != '')
+          {
+            $cc_email_list =  explode(',',$value['cc_email']);
+          }
+  
+        }
+
+        if($add_new_email != '')
+        {
+          $to_email = array_merge( $to_email , $add_new_email );
+        }
       }
+      else
+      {
+        $data = array(
+          "para1" => 'false',
+          "msg" => 'Error Send.'
+        );
+        echo json_encode($data);
+        die;
+      }
+
     }
     else 
     {
@@ -471,124 +495,124 @@ class Blast_email_template extends CI_Controller
 
   public function upload_template_pdf()
   {
-    ini_set('memory_limit', '-1');
-    ini_set('max_execution_time', 0);
-    ini_set('post_max_size', '10M');
-    ini_set('upload_max_filesize', '10M');
-    //set php.ini upload_max_filesize=64M
-    //$acc_guid = $_SESSION['customer_guid'];
-    $session_guid = $_SESSION['user_guid'];
-    $file_uuid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS uuid")->row('uuid');
-    $cur_date = $this->db->query("SELECT now() as now")->row('now');
-    $created_at = $this->db->query("SELECT now() as now")->row('now');
-    //print_r($file_config_main_path); die;
-    $file_name = $this->input->post('file_name');
-    $pdf_template_guid = $this->input->post('pdf_template_guid');
-    $file_config_main_path = $this->file_config_b2b->file_path_name($acc_guid, 'web', 'attachment_docs', 'main_path', 'TMPDOC');
-    $file_config_sec_path = $this->file_config_b2b->file_path_name($acc_guid, 'web', 'attachment_docs', 'sec_path', 'TMPDOCPATH');
-    //print_r($term_type); die;  
+      ini_set('memory_limit', '-1');
+      ini_set('max_execution_time', 0);
+      ini_set('post_max_size', '10M');
+      ini_set('upload_max_filesize', '10M');
+      //set php.ini upload_max_filesize=64M
+      //$acc_guid = $_SESSION['customer_guid'];
+      $session_guid = $_SESSION['user_guid'];
+      $file_uuid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS uuid")->row('uuid');
+      $cur_date = $this->db->query("SELECT now() as now")->row('now');
+      $created_at = $this->db->query("SELECT now() as now")->row('now');
+      //print_r($file_config_main_path); die;
+      $file_name = $this->input->post('file_name');
+      $pdf_template_guid = $this->input->post('pdf_template_guid');
+      $file_config_main_path = $this->file_config_b2b->file_path_name($acc_guid, 'web', 'attachment_docs', 'main_path', 'TMPDOC');
+      $file_config_sec_path = $this->file_config_b2b->file_path_name($acc_guid, 'web', 'attachment_docs', 'sec_path', 'TMPDOCPATH');
+      //print_r($term_type); die;  
 
-    $check_pdf_exists = $this->db->query("SELECT * FROM lite_b2b.email_template_pdf WHERE template_guid = '$pdf_template_guid' ");
-    //echo $this->db->last_query(); die;
+      $check_pdf_exists = $this->db->query("SELECT * FROM lite_b2b.email_template_pdf WHERE template_guid = '$pdf_template_guid' ");
+      //echo $this->db->last_query(); die;
 
-    if ($check_pdf_exists->num_rows() >= 1) {
-        $r_url = $check_pdf_exists->row('url_link');
-        $r_file_name = basename($r_url);
-        $r_unlink_path = $file_config_main_path . "$pdf_template_guid/$r_file_name";
-        unlink($r_unlink_path);
-        $update_data = $this->db->query("DELETE FROM lite_b2b.email_template_pdf WHERE template_guid = '$pdf_template_guid' ");
-    }
+      if ($check_pdf_exists->num_rows() >= 1) {
+          $r_url = $check_pdf_exists->row('url_link');
+          $r_file_name = basename($r_url);
+          $r_unlink_path = $file_config_main_path . "$pdf_template_guid/$r_file_name";
+          unlink($r_unlink_path);
+          $update_data = $this->db->query("DELETE FROM lite_b2b.email_template_pdf WHERE template_guid = '$pdf_template_guid' ");
+      }
 
-    $defined_path = $file_config_main_path . $pdf_template_guid . '/';
-    // $defined_path = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/';
-    // $defined_path_1 = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/';
-    // $defined_path_2 = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/' . $term_type . '/';
-    //print_r($defined_path); die;
+      $defined_path = $file_config_main_path . $pdf_template_guid . '/';
+      // $defined_path = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/';
+      // $defined_path_1 = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/';
+      // $defined_path_2 = $file_config_main_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/' . $term_type . '/';
+      //print_r($defined_path); die;
 
-    $extension = explode('.', $file_name);
-    $file_type = end($extension);
-    // $last_key = count($extension) - 1;
+      $extension = explode('.', $file_name);
+      $file_type = end($extension);
+      // $last_key = count($extension) - 1;
 
-    $running_number = rand();
-    $file_name = 'Attachement_'.$running_number.'.'.$file_type;
+      $running_number = rand();
+      $file_name = 'Attachement_'.$running_number.'.'.$file_type;
 
-    if (!file_exists($defined_path)) {
-        mkdir($defined_path, 0777);
-    }
+      if (!file_exists($defined_path)) {
+          mkdir($defined_path, 0777);
+      }
 
-    //if want add date uncomment here @@@@@
-    // $cur_date = str_replace(' ', '_', $cur_date);
-    // $cur_date = str_replace(':', '', $cur_date);
-    // $file_name = $cur_date . '_' . $file_name;
-    // $file_name = str_replace('[', '', $file_name);
-    // $file_name = str_replace(']', '', $file_name);
+      //if want add date uncomment here @@@@@
+      // $cur_date = str_replace(' ', '_', $cur_date);
+      // $cur_date = str_replace(':', '', $cur_date);
+      // $file_name = $cur_date . '_' . $file_name;
+      // $file_name = str_replace('[', '', $file_name);
+      // $file_name = str_replace(']', '', $file_name);
 
-    $url_link_path = $file_config_sec_path . $pdf_template_guid . '/' . $file_name;
-    // $unlink_path_check = $file_config_sec_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/' . $term_type . '/' . $file_name . '';
+      $url_link_path = $file_config_sec_path . $pdf_template_guid . '/' . $file_name;
+      // $unlink_path_check = $file_config_sec_path . $acc_guid . '/' . $supplier_guid . '/' . $user_guid . '/' . $term_type . '/' . $file_name . '';
 
-    // if(file_exists($unlink_path)){
-    // unlink($unlink_path);
-    // }
+      // if(file_exists($unlink_path)){
+      // unlink($unlink_path);
+      // }
 
-    // $check_path = $file_config_main_path . $pdf_template_guid . '/' . $file_name;
+      // $check_path = $file_config_main_path . $pdf_template_guid . '/' . $file_name;
 
-    // if (file_exists($check_path)) {
-    //     $data = array(
-    //         'para1' => 1,
-    //         'msg' => 'Document File Name Exists.',
-    //     );
-    //     echo json_encode($data);
-    //     exit();
-    // }
+      // if (file_exists($check_path)) {
+      //     $data = array(
+      //         'para1' => 1,
+      //         'msg' => 'Document File Name Exists.',
+      //     );
+      //     echo json_encode($data);
+      //     exit();
+      // }
 
-    $config['upload_path']          = $defined_path;
-    $config['allowed_types']        = '*';
-    $config['max_size']             = 500000000;
-    $config['file_name'] = $file_name;
-    //var_dump( $this->input->post('file') );die; 
-    //print_r($this->input->post());die;
-    $this->load->library('upload', $config);
+      $config['upload_path']          = $defined_path;
+      $config['allowed_types']        = '*';
+      $config['max_size']             = 500000000;
+      $config['file_name'] = $file_name;
+      //var_dump( $this->input->post('file') );die; 
+      //print_r($this->input->post());die;
+      $this->load->library('upload', $config);
 
-    if (!$this->upload->do_upload('file')) {
-        $error = array('error' => $this->upload->display_errors());
+      if (!$this->upload->do_upload('file')) {
+          $error = array('error' => $this->upload->display_errors());
 
-        if (null != $error) {
-            $data = array(
-                'para1' => 1,
-                'msg' => $this->upload->display_errors(),
-            );
-            echo json_encode($data);
-            exit();
-        } //close else
+          if (null != $error) {
+              $data = array(
+                  'para1' => 1,
+                  'msg' => $this->upload->display_errors(),
+              );
+              echo json_encode($data);
+              exit();
+          } //close else
 
-    } else {
-        $data = array('upload_data' => $this->upload->data());
+      } else {
+          $data = array('upload_data' => $this->upload->data());
 
-        $insert_data = $this->db->query("INSERT INTO `lite_b2b`.`email_template_pdf` (`pdf_guid`, `template_guid`,`url_link`, `is_active` ,`created_at`, `created_by`) VALUES ('$file_uuid', '$pdf_template_guid', '$url_link_path' , '1' ,'$created_at', '$session_guid');");
+          $insert_data = $this->db->query("INSERT INTO `lite_b2b`.`email_template_pdf` (`pdf_guid`, `template_guid`,`url_link`, `is_active` ,`created_at`, `created_by`) VALUES ('$file_uuid', '$pdf_template_guid', '$url_link_path' , '1' ,'$created_at', '$session_guid');");
 
-    }
+      }
 
-    $error = $this->db->affected_rows();
+      $error = $this->db->affected_rows();
 
-    if ($error > 0) {
+      if ($error > 0) {
 
-        $data = array(
-            'para1' => 0,
-            'msg' => 'Upload Completed.',
-            //'link' => $url_link,
-        );
-        echo json_encode($data);
-        exit();
-    } else {
-        $data = array(
-            'para1' => 1,
-            'msg' => 'Error Upload Data.',
-            //'link' => 'Unknown URL.',
+          $data = array(
+              'para1' => 0,
+              'msg' => 'Upload Completed.',
+              //'link' => $url_link,
+          );
+          echo json_encode($data);
+          exit();
+      } else {
+          $data = array(
+              'para1' => 1,
+              'msg' => 'Error Upload Data.',
+              //'link' => 'Unknown URL.',
 
-        );
-        echo json_encode($data);
-        exit();
-    }
+          );
+          echo json_encode($data);
+          exit();
+      }
   }
 
   public function insert_batch_email()
@@ -615,7 +639,7 @@ class Blast_email_template extends CI_Controller
         $foreach_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
         $email_address = $value;
 
-        $check_duplicate_email = $this->db->query("SELECT * FROM lite_b2b.blast_email_list WHERE template_guid = '$template_guid' AND email_add = '$email_address' AND `status` = '0'")->result_array();
+        $check_duplicate_email = $this->db->query("SELECT * FROM lite_b2b.blast_email_list WHERE template_guid = '$template_guid' AND email_add = '$email_address' AND `status` IN ('0','1','2')")->result_array();
 
         if(count($check_duplicate_email) > 0)
         {
@@ -640,6 +664,7 @@ class Blast_email_template extends CI_Controller
           'json_param' => $json_param,
           'created_at' => $this->db->query("SELECT NOW() as now")->row('now'),
           'created_by' => $user_id,
+          'status' => '1',
         );
         $this->db->insert('lite_b2b.blast_email_list', $data);
       }
@@ -656,7 +681,7 @@ class Blast_email_template extends CI_Controller
           $foreach_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
           $email_address = $row->user_email;
   
-          $check_duplicate_email = $this->db->query("SELECT * FROM lite_b2b.blast_email_list WHERE template_guid = '$template_guid' AND email_add = '$email_address' AND `status` = '0'")->result_array();
+          $check_duplicate_email = $this->db->query("SELECT * FROM lite_b2b.blast_email_list WHERE template_guid = '$template_guid' AND email_add = '$email_address' AND `status` IN ('0','1','2')")->result_array();
   
           if(count($check_duplicate_email) > 0)
           {
@@ -681,6 +706,7 @@ class Blast_email_template extends CI_Controller
             'json_param' => $json_param,
             'created_at' => $this->db->query("SELECT NOW() as now")->row('now'),
             'created_by' => $user_id,
+            'status' => '1',
           );
           $this->db->insert('lite_b2b.blast_email_list', $data);
         }
@@ -703,6 +729,199 @@ class Blast_email_template extends CI_Controller
         "msg" => 'Failed to Insert'
       );
     }
+
+    echo json_encode($data);
+  }
+
+  public function API_insert_batch_email()
+  {
+    $mail_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
+    $user_guid = $_SESSION['user_guid'];
+    $user_id = $this->db->query("SELECT a.user_name FROM lite_b2b.set_user a WHERE a.user_guid ='$user_guid'")->row('user_name');
+    $template_guid = $this->input->post('template_guid');
+    $email_group = $this->input->post('email_group');
+    $add_new_email = array_filter($this->input->post('add_new_email'));
+    $acc_guid = $this->input->post('acc_guid');
+    $email_type = 'email_template';
+    $json_param = '';
+
+    $count_email = count($add_new_email);
+    
+    if($count_email > 0 )
+    {
+      //print_r($add_new_email); die;
+      $add_new_email = implode(',', $add_new_email);
+      $to_email = array_unique(explode(',', $add_new_email));
+
+      $foreach_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
+
+      $data_array = array(
+        '%retailer_name%' => 'TFVM',
+        '%start_date%' => '2023-03-01',
+      );
+
+      foreach ($to_email as $email) {
+        $newArray[] = array('email_address' => $email);
+      }
+      // print_r($newArray); die;
+        
+      $json_param = $data_array;
+      $supplier_code = '';
+      // $template_guid = '';
+      // print_r($add_new_email); 
+      // print_r($json_param); die;
+      // $json_param = [];
+
+      $data[] = array(
+        'customer_guid' => $acc_guid,
+        'supplier_code' => $supplier_code,
+        'email_guid' => $foreach_guid,
+        'template_guid' => $template_guid,
+        'email_address' => $newArray,
+        'email_type' => $email_type,
+        'json_param' => $json_param,
+        'status' => 88,
+        'created_at' => $this->db->query("SELECT NOW() as now")->row('now'),
+        'created_by' => $user_id,
+      );
+      //$this->db->insert('lite_b2b.blast_email_list', $data);
+
+      // print_r(json_encode($data)); die;
+
+      $to_shoot_url = "127.0.0.1/rest_b2b/index.php/Blast_email_process/process_email_list";
+
+      $cuser_name = 'ADMIN';
+      $cuser_pass = '1234';
+
+      $ch = curl_init($to_shoot_url);
+      // curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-API-KEY: " . "CODEX1234" ));
+      curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Api-KEY: 123456"));
+      curl_setopt($ch, CURLOPT_USERPWD, "$cuser_name:$cuser_pass");
+      curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+      $result = curl_exec($ch);
+      // echo $result; die;
+      $output = json_decode($result);
+
+      if ($output->status == "true") {
+          $data = array(
+              'para1' => 'true',
+              'msg' => 'Successful.',
+
+          );
+          //echo json_encode($data);
+      } else {
+          $data = array(
+              'para1' => 'false',
+              'msg' => 'Failed.',
+
+          );
+         // echo json_encode($data);
+      }
+    }
+    
+    if($email_group != '')
+    {
+      $get_group_email = $this->db->query("SELECT `guid`, email_group_guid, user_email FROM lite_b2b.set_email_group WHERE email_group_guid = '$email_group' AND `is_active` = '1' AND user_email LIKE '%@%' ");
+
+      if($get_group_email->num_rows() > 0)
+      {
+        foreach($get_group_email->result() as $row)
+        {
+          unset($data);
+          unset($data_array);
+          $foreach_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS mail_guid")->row('mail_guid');
+          $email_address = $row->user_email;
+  
+          $check_duplicate_email = $this->db->query("SELECT * FROM lite_b2b.blast_email_list WHERE template_guid = '$template_guid' AND email_add = '$email_address' AND `status` = '0'")->result_array();
+  
+          if(count($check_duplicate_email) > 0)
+          {
+            continue;
+          }
+
+          // $data_array = array(
+          //   '%retailer_name%' => 'TFVM',
+          //   '%start_date%' => '2023-03-01',
+          // );
+  
+          // $json_param = $data_array;
+  
+          //print_r($json_param); die;
+          
+          $data[] = array(
+            'customer_guid' => $acc_guid,
+            'supplier_code' => $supplier_code,
+            'email_guid' => $foreach_guid,
+            'template_guid' => $template_guid,
+            'email_address' => $email_address,
+            'email_type' => $email_type,
+            'json_param' => $json_param,
+            'created_at' => $this->db->query("SELECT NOW() as now")->row('now'),
+            'created_by' => $user_id,
+          );
+          //$this->db->insert('lite_b2b.blast_email_list', $data);
+
+          $to_shoot_url = "127.0.0.1/rest_b2b/index.php/Blast_email_process/process_email_list";
+
+
+          $cuser_name = 'ADMIN';
+          $cuser_pass = '1234';
+
+          $ch = curl_init($to_shoot_url);
+          // curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-API-KEY: " . "CODEX1234" ));
+          curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+          curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+          curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+          curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Api-KEY: 123456"));
+          curl_setopt($ch, CURLOPT_USERPWD, "$cuser_name:$cuser_pass");
+          curl_setopt($ch, CURLOPT_POST, 1);
+          curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+
+          $result = curl_exec($ch);
+          //echo $result; die;
+          $output = json_decode($result);
+
+          if ($output->status == "true") {
+              $data = array(
+                  'para1' => 'true',
+                  'msg' => 'Successful.',
+
+              );
+              //echo json_encode($data);
+          } else {
+              $data = array(
+                  'para1' => 'false',
+                  'msg' => 'Failed.',
+
+              );
+             // echo json_encode($data);
+          }
+
+        }
+      }
+    }
+
+    // $error = $this->db->affected_rows();
+
+    // if($error > 0)
+    // {
+    //   $data = array(
+    //     "para1" => 'true',
+    //     "msg" => 'Insert to Batch Successfully'
+    //   );
+    // }
+    // else
+    // {
+    //   $data = array(
+    //     "para1" => 'false',
+    //     "msg" => 'Failed to Insert'
+    //   );
+    // }
 
     echo json_encode($data);
   }

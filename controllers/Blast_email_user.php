@@ -917,6 +917,7 @@ class Blast_email_user extends CI_Controller {
 
               $r++;
               if (count($query_supplier) == 0) {
+                echo $this->db->last_query(); die;
                 $data = array(
                   'para1' => 1,
                   'msg' => 'Invalid Supplier or not active or suspended : ' . $row2 ,

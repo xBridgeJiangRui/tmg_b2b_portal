@@ -974,10 +974,11 @@ class registration_new extends CI_Controller
         8 => 'cnt',
         9 => 'part_cnt',
         10 => 'form_status',
-        11 => 'update_at',
-        12 => 'update_by',
-        13 => 'create_at',
-        14 => 'create_by',
+        11 => 'transfer_b2b',
+        12 => 'update_at',
+        13 => 'update_by',
+        14 => 'create_at',
+        15 => 'create_by',
 
       );
     } else {
@@ -993,10 +994,11 @@ class registration_new extends CI_Controller
         8 => 'cnt',
         9 => 'part_cnt',
         10 => 'form_status',
-        11 => 'update_at',
-        12 => 'update_by',
-        13 => 'create_at',
-        14 => 'create_by',
+        11 => 'transfer_b2b',
+        12 => 'update_at',
+        13 => 'update_by',
+        14 => 'create_at',
+        15 => 'create_by',
       );
     }
 
@@ -1061,7 +1063,8 @@ class registration_new extends CI_Controller
           aa.cap_end_date,
           aa.waive_start_date,
           aa.waive_end_date,
-          aa.isinvoice
+          aa.isinvoice,
+          aa.transfer_b2b
         FROM
           (SELECT 
             c.`supplier_name`,
@@ -1131,7 +1134,8 @@ class registration_new extends CI_Controller
           IF(aa.template_name IS NULL ,aa.`memo_type`,aa.template_name) AS memo_type,
           IF(aa.template_name IS NULL ,aa.`memo_type`,aa.memo_type) AS memo_name,
           aa.url,
-          aa.`comp_no`
+          aa.`comp_no`,
+          aa.transfer_b2b
         FROM
           (SELECT 
             c.`supplier_name`,
@@ -1205,20 +1209,21 @@ class registration_new extends CI_Controller
         $nestedData['memo_type'] = $post->memo_type;
         $nestedData['memo_name'] = $post->memo_name;
         $nestedData['register_guid'] = $post->register_guid;
+        $nestedData['transfer_b2b'] = $post->transfer_b2b;
 
 
         if ($_SESSION['user_group_name'] == 'SUPER_ADMIN' || $_SESSION['user_group_name'] == 'CUSTOMER_ADMIN_TESTING_USE') {
 
           if ($post->form_status == '') {
-            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a register_guid=' . $post->register_guid . ' id="send_btn" title="SEND" class="btn btn-xs btn-warning" type="button"  form_type ="register" style="margin-left:5px;" ><i class="glyphicon glyphicon-send"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" style="margin-top:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_delete_form" title="DELETE" register_guid="' . $post->register_guid . '" style="margin-top:5px;margin-left:5px;"><i class="glyphicon glyphicon-remove"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
+            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a register_guid=' . $post->register_guid . ' id="send_btn" title="SEND" class="btn btn-xs btn-warning" type="button"  form_type ="register" style="margin-left:5px;" ><i class="glyphicon glyphicon-send"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" transfer_b2b="' . $post->transfer_b2b . '" style="margin-top:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_delete_form" title="DELETE" register_guid="' . $post->register_guid . '" style="margin-top:5px;margin-left:5px;"><i class="glyphicon glyphicon-remove"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
           } else if (($post->form_status == 'Send') || ($post->form_status == 'Save-Progress') || ($post->form_status == 'Advance')) {
-            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a register_guid=' . $post->register_guid . ' id="send_btn" title="SEND" class="btn btn-xs btn-warning" type="button"  form_type ="register" style="margin-left:5px;" ><i class="glyphicon glyphicon-send"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" style="margin-top:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" style="margin-top:5px;margin-left:5px;" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
+            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a register_guid=' . $post->register_guid . ' id="send_btn" title="SEND" class="btn btn-xs btn-warning" type="button"  form_type ="register" style="margin-left:5px;" ><i class="glyphicon glyphicon-send"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" transfer_b2b="' . $post->transfer_b2b . '" style="margin-top:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" style="margin-top:5px;margin-left:5px;" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
           } else if (($post->form_status == 'New') || ($post->form_status == 'Processing')) {
-            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_type . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" style="margin-left:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
+            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_type . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" transfer_b2b="' . $post->transfer_b2b . '" style="margin-left:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
           } else if (($post->form_status == 'Archived')) {
             $nestedData['action'] = '<a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '"><i class="fa fa-file-archive-o"></i></a>';
           } else {
-            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" style="margin-left:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
+            $nestedData['action'] = '<a register_guid=' . $post->register_guid . ' id="view_ticket" title="FORM" class="btn btn-xs btn-primary" type="button" href="register_form_edit_new?register_guid=' . $post->register_guid . '"><i class="glyphicon glyphicon-pencil"></i></a><a class="btn btn-xs btn-info" type="button" id="btn_edit_form" title="EDIT" register_guid="' . $post->register_guid . '" register_no="' . $post->register_no . '" supplier_guid="' . $post->supplier_guid . '" supplier_name="' . $post->supplier_name . '" comp_no="' . $post->comp_no . '" acc_name="' . $post->acc_name . '" comp_email="' . $post->comp_email . '" edit_acc_no="' . $post->acc_no . '" memo_type="' . $post->memo_name . '" form_status="' . $post->form_status . '" comp_contact="' . $post->comp_contact . '" second_comp_contact="' . $post->second_comp_contact . '" outright_template="' . $post->outright_template . '" consignment_template="' . $post->consignment_template . '" cap_template="' . $post->cap_template . '" waive_template="' . $post->waive_template . '" outright_start_date="' . $post->outright_start_date . '" consign_start_date="' . $post->consign_start_date . '" cap_start_date="' . $post->cap_start_date . '" cap_end_date="' . $post->cap_end_date . '" waive_start_date="' . $post->waive_start_date . '" waive_end_date="' . $post->waive_end_date . '" isinvoice="' . $post->isinvoice . '" transfer_b2b="' . $post->transfer_b2b . '" style="margin-left:5px;"><i class="fa fa-edit"></i></a><a class="btn btn-xs btn-danger" type="button" id="btn_archive" title="Archive" register_guid="' . $post->register_guid . '" form_status="' . $post->form_status . '" style="margin-top:5px;"><i class="fa fa-file-archive-o"></i></a>';
 
             //<a register_guid='.$post->register_guid.'id="view_ticket" class="btn btn-xs btn-primary" type="button" href="register_form_view?register_guid='.$post->register_guid.'" style="margin-left:5px;"><i class="glyphicon glyphicon-eye-open"></i></a>
           }
@@ -1333,7 +1338,14 @@ class registration_new extends CI_Controller
       $myArray_3 = explode(',', $vendor_remark_edit);
       $myArray_3 = array_filter($myArray_3); //show vendor code remark array
 
-      $get_user_group = $this->db->query("SELECT user_group_guid,user_group_name FROM lite_b2b.set_user_group WHERE group_info_status = '1'");
+      $get_user_group = $this->db->query("SELECT user_group_guid,user_group_name FROM lite_b2b.set_user_group WHERE group_info_status >= '1' AND isactive = '1' ORDER BY group_info_status ASC");
+
+      if($get_user_group->num_rows() == 0)
+      {
+        echo "<script> alert('Please Contact Support. Invalid User Group Found.');</script>";
+        echo "<script> document.location='" . base_url() . "index.php/' </script>";
+        exit();
+      }
 
       // if($get_user_group->num_rows() == 0)
       // {
@@ -1381,8 +1393,8 @@ class registration_new extends CI_Controller
           $dis_msg2 = 'Not Found';
         }
 
-        $user_group_dropdown_array = $this->db->query("SELECT * FROM set_user_group WHERE module_group_guid = '".$this->session->userdata('module_group_guid')."' AND isactive = '1' AND admin_active = '1' ORDER BY group_info_status DESC, admin_active DESC , user_group_name ASC");
-
+        $user_group_dropdown_array = $this->db->query("SELECT * FROM set_user_group WHERE module_group_guid = '".$this->session->userdata('module_group_guid')."' AND isactive = '1' AND admin_active >='1' ORDER BY group_info_status DESC, admin_active DESC , user_group_name ASC");
+        
         $check_user_group_dropdown = $this->db->query("SELECT * FROM lite_b2b.set_user a WHERE a.user_id = '$part1' AND a.acc_guid = '" . $register->row('customer_guid') . "' GROUP BY a.user_guid");
 
         $user_group_dropdown = '<select class="form-control select2 user_group_css" style="width:100%" name="user_group_down[]" id="user_details_selection'.$user_details_count.'">';
@@ -2170,6 +2182,7 @@ class registration_new extends CI_Controller
     $waive_end_date = $this->input->post('edit_waive_end');
 
     $edit_is_invoice = $this->input->post('edit_is_invoice');
+    $edit_transfer_b2b = $this->input->post('edit_transfer_b2b');
 
     $user_id = $this->db->query("SELECT a.user_id FROM set_user a WHERE a.user_guid ='" . $_SESSION['user_guid'] . "'")->row('user_id');
     $updated_at = $this->db->query("SELECT now() as now")->row('now');
@@ -2221,6 +2234,7 @@ class registration_new extends CI_Controller
       'comp_name' => $edit_supp_name,
       'comp_no' => $edit_comp_no,
       'isinvoice' => $edit_is_invoice,
+      'transfer_b2b' => $edit_transfer_b2b,
     );
 
     if($form_status != 'Terminated')
@@ -3336,16 +3350,16 @@ class registration_new extends CI_Controller
   {
     $register_guid = $this->input->post('register_guid');
     $customer_guid = $this->input->post('customer_guid');
-    // $outright_template = $this->input->post('add_outright_template');
-    // $consignment_template = $this->input->post('add_consign_template');
-    // $cap_template = $this->input->post('add_cap_template');
-    // $waive_template = $this->input->post('add_waive_template');
-    // $outright_start_date = $this->input->post('add_outright_start');
-    // $consign_start_date = $this->input->post('add_consign_start');
-    // $cap_start_date = $this->input->post('add_cap_start');
-    // $cap_end_date = $this->input->post('add_cap_end');
-    // $waive_start_date = $this->input->post('add_waive_start');
-    // $waive_end_date = $this->input->post('add_waive_end');
+    $outright_template = $this->input->post('add_outright_template');
+    $consignment_template = $this->input->post('add_consign_template');
+    $cap_template = $this->input->post('add_cap_template');
+    $waive_template = $this->input->post('add_waive_template');
+    $outright_start_date = $this->input->post('add_outright_start');
+    $consign_start_date = $this->input->post('add_consign_start');
+    $cap_start_date = $this->input->post('add_cap_start');
+    $cap_end_date = $this->input->post('add_cap_end');
+    $waive_start_date = $this->input->post('add_waive_start');
+    $waive_end_date = $this->input->post('add_waive_end');
 
     $user_id = $this->db->query("SELECT a.user_id FROM set_user a WHERE a.user_guid ='" . $_SESSION['user_guid'] . "'")->row('user_id');
     $updated_at = $this->db->query("SELECT now() as now")->row('now');
@@ -3366,21 +3380,21 @@ class registration_new extends CI_Controller
       exit();
     }
 
-    // $data_template = array(   
-    //   'outright_template' => $outright_template,
-    //   'consignment_template' => $consignment_template,
-    //   'cap_template' => $cap_template,
-    //   'waive_template' => $waive_template,
-    //   'outright_start_date' => $outright_start_date,
-    //   'consign_start_date' => $consign_start_date,
-    //   'cap_start_date' => $cap_start_date,
-    //   'cap_end_date' => $cap_end_date,
-    //   'waive_start_date' => $waive_start_date,
-    //   'waive_end_date' => $waive_end_date,
-    // );
+    $data_template = array(   
+      'outright_template' => $outright_template,
+      'consignment_template' => $consignment_template,
+      'cap_template' => $cap_template,
+      'waive_template' => $waive_template,
+      'outright_start_date' => $outright_start_date,
+      'consign_start_date' => $consign_start_date,
+      'cap_start_date' => $cap_start_date,
+      'cap_end_date' => $cap_end_date,
+      'waive_start_date' => $waive_start_date,
+      'waive_end_date' => $waive_end_date,
+    );
 
-    // $this->db->where('register_guid', $register_guid);
-    // $this->db->update('set_supplier_info', $data_template);
+    $this->db->where('register_guid', $register_guid);
+    $this->db->update('set_supplier_info', $data_template);
 
     $data = array(
       'update_at' => $updated_at,
@@ -4003,7 +4017,7 @@ class registration_new extends CI_Controller
       die;
     }
 
-    $check_user_info = $this->db->query("SELECT b.supplier_guid,c.supplier_name FROM lite_b2b.set_user a 
+    $check_user_info = $this->db->query("SELECT a.user_guid,b.supplier_guid,c.supplier_name FROM lite_b2b.set_user a 
     INNER JOIN lite_b2b.set_supplier_user_relationship b
     ON a.user_guid = b.user_guid
     AND a.acc_guid = b.customer_guid
@@ -4017,19 +4031,24 @@ class registration_new extends CI_Controller
       foreach($check_user_info->result() as $row)
       {
         $user_mapping_supplier_guid = $row->supplier_guid;
+        $create_user_guid = $row->user_guid;
 
-        $check_is_admin_user_exists = $this->db->query("SELECT b.user_group_guid,b.user_id FROM lite_b2b.set_supplier_user_relationship a
+        // why need check group_info_status is due to exlcude out admin outright / consign and user
+        $check_is_admin_user_exists = $this->db->query("SELECT b.user_group_guid,CONCAT(b.user_id,' - ',d.supplier_name ,' - ',c.user_group_name,'\n') AS concat_user_info FROM lite_b2b.set_supplier_user_relationship a
         INNER JOIN lite_b2b.set_user b
         ON a.user_guid = b.user_guid
         AND a.customer_guid = b.acc_guid
         INNER JOIN lite_b2b.set_user_group c
         ON b.user_group_guid = c.user_group_guid
         AND c.admin_active = '1'
-        AND c.group_info_status = '1'
+        INNER JOIN lite_b2b.set_supplier d
+        ON a.supplier_guid = d.supplier_guid
         WHERE a.supplier_guid = '$user_mapping_supplier_guid' 
         AND a.customer_guid = '$customer_guid'
+        AND a.user_guid = '$create_user_guid'
+        AND c.group_info_status NOT IN ('1','4','5')
         GROUP BY b.user_guid,b.acc_guid")->result_array();
-  
+        
         if(count($check_is_admin_user_exists) > 0 )
         {
           $user_details_admin = implode(",",array_filter(array_column($check_is_admin_user_exists,'user_id')));
@@ -4182,7 +4201,7 @@ class registration_new extends CI_Controller
       die;
     }
 
-    $check_user_info = $this->db->query("SELECT b.supplier_guid,c.supplier_name FROM lite_b2b.set_user a 
+    $check_user_info = $this->db->query("SELECT a.user_guid,b.supplier_guid,c.supplier_name FROM lite_b2b.set_user a 
     INNER JOIN lite_b2b.set_supplier_user_relationship b
     ON a.user_guid = b.user_guid
     AND a.acc_guid = b.customer_guid
@@ -4196,19 +4215,24 @@ class registration_new extends CI_Controller
       foreach($check_user_info->result() as $row)
       {
         $user_mapping_supplier_guid = $row->supplier_guid;
+        $create_user_guid = $row->user_guid;
 
-        $check_is_admin_user_exists = $this->db->query("SELECT b.user_group_guid,b.user_id FROM lite_b2b.set_supplier_user_relationship a
+        // why need check group_info_status is due to exlcude out admin outright / consign and user
+        $check_is_admin_user_exists = $this->db->query("SELECT b.user_group_guid,CONCAT(b.user_id,' - ',d.supplier_name ,' - ',c.user_group_name,'\n') AS concat_user_info FROM lite_b2b.set_supplier_user_relationship a
         INNER JOIN lite_b2b.set_user b
         ON a.user_guid = b.user_guid
         AND a.customer_guid = b.acc_guid
         INNER JOIN lite_b2b.set_user_group c
         ON b.user_group_guid = c.user_group_guid
         AND c.admin_active = '1'
-        AND c.group_info_status = '1'
+        INNER JOIN lite_b2b.set_supplier d
+        ON a.supplier_guid = d.supplier_guid
         WHERE a.supplier_guid = '$user_mapping_supplier_guid' 
         AND a.customer_guid = '$customer_guid'
+        AND a.user_guid = '$create_user_guid'
+        AND c.group_info_status NOT IN ('1','4','5')
         GROUP BY b.user_guid,b.acc_guid")->result_array();
-  
+        
         if(count($check_is_admin_user_exists) > 0 )
         {
           $user_details_admin = implode(",",array_filter(array_column($check_is_admin_user_exists,'user_id')));
@@ -4758,7 +4782,7 @@ class registration_new extends CI_Controller
 
     //$header_array = array();
 
-    $header_array = ['Retailer Name', 'Supplier Name', 'Reg No', 'Vendor Code', 'Company Email', 'Phone', 'Second Phone', 'Memo Type'];
+    $header_array = ['Retailer Name', 'Supplier Name', 'Reg No', 'Vendor Code', 'Company Email', 'Phone', 'Second Phone', 'Memo Type', 'B2B Transfer'];
 
     $checking_array = array();
 
@@ -4943,6 +4967,7 @@ class registration_new extends CI_Controller
     $unqiue_supplier = array_unique($supplier_guid);
     $count_array_1 = count($supplier_guid);
     $count_array_2 = count($unqiue_supplier);
+
     if ($count_array_1 != $count_array_2) {
       $data = array(
         'para1' => 1,
@@ -4971,8 +4996,9 @@ class registration_new extends CI_Controller
             if (!($row2 == '' && $row2 == null)) {
               $supplier_query = $this->db->query("SELECT * FROM set_supplier WHERE reg_no = '$row2' AND supplier_guid = '$supplier_guid[$r]'  AND isactive = '1' ORDER BY supplier_name ASC");
               //echo $this->db->last_query(); die;
-              $r++;
+              
               if ($supplier_query->num_rows() == 0) {
+                // echo $this->db->last_query(); echo '\n\n'; print_r($r); echo '\n\n'; print_r($supplier_guid[$r]); die;
                 $data = array(
                   'para1' => 1,
                   'msg' => 'Error find Reg No: ' . $row2 . '.',
@@ -4980,6 +5006,8 @@ class registration_new extends CI_Controller
                 echo json_encode($data);
                 exit();
               } //close num rows
+
+              $r++;
             } //close else
           } //close itemcode
         } //close foreach td itemcode
@@ -5107,7 +5135,6 @@ class registration_new extends CI_Controller
         $re_no = $this->db->query("SELECT IFNULL( MAX(LPAD(RIGHT(register_no, 4) + 1, 4, 0)), LPAD(1, 4, 0) ) AS re_no  FROM lite_b2b.`register_new`  WHERE  SUBSTRING(register_no, - 10, 6) = '$todaydate2' ")->row('re_no');
         $register_no = $this->db->query("SELECT concat( '$todaydate2', '$re_no' ) as refno")->row('refno');
         $register_number = $register_no + $i;
-
         $exchild_main .= "(" . $exchild . "'$register_guid','$now','$user_id','$now','$user_id','1','$customer_guid','$register_number','$supplier_guid[$i]'),";
 
         $set_supplier_exchild .= "('$supplier_info_guid','$register_guid'),";
@@ -5127,7 +5154,9 @@ class registration_new extends CI_Controller
       exit();
     }
 
-    $insert_main = $this->db->query("INSERT INTO lite_b2b.register_new (`acc_name`,`comp_name`,`comp_no`,`acc_no`,`store_code`,`comp_email`,`comp_contact`,`second_comp_contact`,`memo_type`,`register_guid`,`create_at`,`create_by`,`update_at`,`update_by`,`isactive`,customer_guid,register_no,supplier_guid) VALUES $exchild_main ");
+    // print_r($exchild_main); die;
+
+    $insert_main = $this->db->query("INSERT INTO lite_b2b.register_new (`acc_name`,`comp_name`,`comp_no`,`acc_no`,`store_code`,`comp_email`,`comp_contact`,`second_comp_contact`,`memo_type`,`transfer_b2b`,`register_guid`,`create_at`,`create_by`,`update_at`,`update_by`,`isactive`,customer_guid,register_no,supplier_guid) VALUES $exchild_main ");
 
     $insert_supplier_info = $this->db->query("INSERT INTO lite_b2b.set_supplier_info (`supplier_info_guid`,register_guid) VALUES $set_supplier_exchild ");
 

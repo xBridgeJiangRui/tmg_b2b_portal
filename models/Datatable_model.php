@@ -136,6 +136,14 @@ class datatable_model extends CI_Model
         {
             $conditon = " WHERE (refno like '%$search%' or loc_group like '%$search%' or supplier_code like '%$search%' or supplier_name like '%$search%' or trans_type like '%$search%' or docno like '%$search%' or docdate like '%$search%')";
         }
+        else if($doc == 'user_table')
+        {
+            $conditon = " WHERE (acc_name like '%$search%' or supplier_name like '%$search%' or user_name like '%$search%' or user_id like '%$search%' or user_group_name like '%$search%' or status_naming like '%$search%')";
+        }
+        else if($doc == 'user_count')
+        {
+            $conditon = " WHERE (acc_name like '%$search%' or supplier_name like '%$search%' or user_count like '%$search%' or invoice_number like '%$search%' )";
+        }
 
         $sql = $sql.$conditon;
         //print_r($sql); die;

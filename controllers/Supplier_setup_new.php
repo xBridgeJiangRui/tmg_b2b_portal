@@ -746,7 +746,7 @@ class Supplier_setup_new extends CI_Controller
             $supplier_guid =  $this->input->post('supplier_guid');
             $b2b_summary_table = 'b2b_summary';
             $table = $this->input->post('table');
-            $url = 'https://b2b.xbridge.my';
+            $url = '';
             $mode = $this->input->post('mode');
             $customer_guid = $this->session->userdata('customer_guid');
             $customer_name = $this->db->query("SELECT * FROM acc WHERE acc_guid = '$customer_guid' LIMIT 1");
@@ -784,39 +784,44 @@ class Supplier_setup_new extends CI_Controller
                         'url_2' => $public_ip->row('public_ip_3') . '/lite_panda_b2b_checking_rest/index.php/Update_b2b_flag',
                     );
                 } else {
-                    // $url = array(
-                    //     'url' => $public_ip->row('public_ip') . '/lite_panda_b2b_checking_rest/index.php/Update_b2b_flag',
-                    // );
+                    $url = array(
+                        'url' => $public_ip->row('public_ip') . '/lite_panda_b2b_checking_rest/index.php/Update_b2b_flag',
+                    );
                 }
 
-                foreach ($url as $key => $value) {
+                $check_reg_flag_settings = $this->db->query("SELECT disabled_b2b_flag FROM lite_b2b.acc_settings WHERE customer_guid = '$customer_guid' AND disabled_b2b_flag = '1' ")->result_array();
 
-                    $ch = curl_init($value);
-                    curl_setopt($ch, CURLOPT_TIMEOUT, 0);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Api-KEY: 123456"));
-                    curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, array('vendor_code' => $supplier_group_name, 'type' => 'create', 'insert_sql_query' => $insert_sql_query));
+                if(count($check_reg_flag_settings) == 0)
+                {
+                    foreach ($url as $key => $value) {
 
-                    $result = curl_exec($ch);
+                        $ch = curl_init($value);
+                        curl_setopt($ch, CURLOPT_TIMEOUT, 0);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Api-KEY: 123456"));
+                        curl_setopt($ch, CURLOPT_USERPWD, "$username:$password");
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, array('vendor_code' => $supplier_group_name, 'type' => 'create', 'insert_sql_query' => $insert_sql_query));
 
-                    $output =  json_decode($result, true);
+                        $result = curl_exec($ch);
 
-                    $log = array(
-                        'guid' => $this->db->query("SELECT UPPER(REPLACE(UUID(),'-','')) as guid")->row('guid'),
-                        'customer_guid' => $customer_guid,
-                        'status' => ($output['status'] == 'true') ? 'Success' : 'Error',
-                        'reason' => $output['message'],
-                        // 'vendor_code' => json_decode($supplier_group_name, true),
-                        'vendor_code' => json_encode($supplier_group_name),
-                        'module' => 'manual_supplier_setup',
-                        'created_at' => date("Y-m-d H:i:s"),
-                        'created_by' =>  $_SESSION['userid'],
-                    );
+                        $output =  json_decode($result, true);
 
-                    $this->db->insert('lite_b2b.mapping_vendor_code_error_log', $log);
+                        $log = array(
+                            'guid' => $this->db->query("SELECT UPPER(REPLACE(UUID(),'-','')) as guid")->row('guid'),
+                            'customer_guid' => $customer_guid,
+                            'status' => ($output['status'] == 'true') ? 'Success' : 'Error',
+                            'reason' => $output['message'],
+                            // 'vendor_code' => json_decode($supplier_group_name, true),
+                            'vendor_code' => json_encode($supplier_group_name),
+                            'module' => 'manual_supplier_setup',
+                            'created_at' => date("Y-m-d H:i:s"),
+                            'created_by' =>  $_SESSION['userid'],
+                        );
+
+                        $this->db->insert('lite_b2b.mapping_vendor_code_error_log', $log);
+                    }
                 }
                 // $email_group = $this->db->query("SELECT a.user_id as email,a.user_name as first_name FROM set_user a INNER JOIN set_user_group b ON a.user_group_guid = b.user_group_guid INNER JOIN set_user_module c ON b.user_group_guid = c.user_group_guid INNER JOIN set_module d ON c.module_guid = d.module_guid INNER JOIN set_module_group e ON d.module_group_guid = e.module_group_guid WHERE a.isactive = 1 AND a.acc_guid = '$customer_guid' AND e.module_group_name = 'Panda B2B' AND c.isenable = 1 AND d.module_code = 'RENSS' AND a.acc_guid != 'D361F8521E1211EAAD7CC8CBB8CC0C93' AND a.acc_guid != '1F90F5EF90DF11EA818B000D3AA2CAA9' AND a.acc_guid != '599348EDCB2F11EA9A81000C29C6CEB2' AND a.acc_guid != '907FAFE053F011EB8099063B6ABE2862' AND a.acc_guid != '13EE932D98EB11EAB05B000D3AA2838A' GROUP BY a.user_guid");
                 // // print_r($email_group->result());die;
@@ -1845,7 +1850,7 @@ class Supplier_setup_new extends CI_Controller
       $now = $this->db->query("SELECT NOW() as now")->row('now');
   
       $file_config_main_path = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'online_form', 'main_path', 'REG');
-  
+
       $defined_path = $file_config_main_path; // './uploads/empty/';
       //print_r($defined_path); die;
   
@@ -1919,7 +1924,7 @@ class Supplier_setup_new extends CI_Controller
   
       //$header_array = array();
   
-      $header_array = ['Supplier Name', 'Reg No'];
+      $header_array = ['Supplier Name', 'Reg No', 'Debtor Code'];
   
       $checking_array = array();
   
@@ -2058,13 +2063,48 @@ class Supplier_setup_new extends CI_Controller
           foreach ($echild as $key => $row2) {
             if ($key == $type_search) {
               if (!($row2 == '' && $row2 == null)) {
-                $supplier_query = $this->db->query("SELECT * FROM lite_b2b.set_supplier WHERE reg_no = '$row2' AND supplier_guid = '$supplier_guid[$r]' ORDER BY supplier_name ASC");
-                //echo $this->db->last_query(); die;
+                $supplier_query = $this->db->query("SELECT * FROM lite_b2b.set_supplier WHERE reg_no = '$row2' ORDER BY supplier_name ASC");
+                // echo $this->db->last_query(); die;
                 $r++;
                 if ($supplier_query->num_rows() > 0) {
                   $data = array(
                     'para1' => 'false',
                     'msg' => 'Duplicate Reg No: ' . $row2 . '.',
+                  );
+                  echo json_encode($data);
+                  exit();
+                } //close num rows
+              } //close else
+            } //close itemcode
+          } //close foreach td itemcode
+        } //close loop row
+  
+      } //close foreach child data checking
+
+      $c = 0;
+      for ($xrow = 2; $xrow <= $highestRow; $xrow++) {
+        //  Read a row of data into an array
+        $xrowData = $sheet->rangeToArray('C' . $xrow . ':' . $highestColumn . $xrow, NULL, TRUE, FALSE);
+  
+        $search_array = $sheet->rangeToArray('C' . 1 . ':' . $highestColumn . 1, NULL, TRUE, FALSE);
+  
+        $type_search = array_search('Debtor Code', $search_array[0]);
+  
+        $exchild = '';
+  
+        //if($this->isEmptyRow(reset($xrowData))) { continue; }
+  
+        foreach ($xrowData as $echild) {
+          foreach ($echild as $key => $row2) {
+            if ($key == $type_search) {
+              if (!($row2 == '' && $row2 == null)) {
+                $acc_code_query = $this->db->query("SELECT * FROM lite_b2b.set_supplier WHERE acc_code = '$row2' ORDER BY supplier_name ASC");
+                // echo $this->db->last_query(); die;
+                $c++;
+                if ($acc_code_query->num_rows() > 0) {
+                  $data = array(
+                    'para1' => 'false',
+                    'msg' => 'Duplicate Debtor Code: ' . $row2 . '.',
                   );
                   echo json_encode($data);
                   exit();
@@ -2103,7 +2143,6 @@ class Supplier_setup_new extends CI_Controller
             {
               $row2 = $row2;
               $name_reg = $row2;
-              $new_acc_code = 'PENDING';
             }
   
             if ($v == '1') {
@@ -2111,7 +2150,7 @@ class Supplier_setup_new extends CI_Controller
             }
 
             if ($v == '0') {
-                $exchild .= "'" . addslashes($row2) . "','" . addslashes($name_reg) . "','" . addslashes($new_acc_code) . "',";
+                $exchild .= "'" . addslashes($row2) . "','" . addslashes($name_reg) . "',";
             } else {
                 $exchild .= "'" . addslashes($row2) . "',";
             }
@@ -2120,7 +2159,7 @@ class Supplier_setup_new extends CI_Controller
           } //close foreach
           $supplier_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS uuid")->row('uuid');
           $old_supplier_name = '';
-          $isactive = '9';
+          $isactive = '1';
           $gst_no = '';
 
           $exchild_main .= "(" . $exchild . "'$supplier_guid','$old_supplier_name','$isactive','$gst_no','$now','$user_id','$now','$user_id'),";
@@ -2142,23 +2181,25 @@ class Supplier_setup_new extends CI_Controller
         exit();
       }
 
-      $insert_main = $this->db->query("INSERT INTO lite_b2b.set_supplier (`supplier_name`,`name_reg`,`acc_code`,`reg_no`,`supplier_guid`,`old_supplier_name`,`isactive`,`gst_no`,`created_at`,`created_by`,`updated_at`,`updated_by`) VALUES $exchild_main ");
+      $insert_main = $this->db->query("INSERT INTO lite_b2b.set_supplier (`supplier_name`,`name_reg`,`reg_no`,`acc_code`,`supplier_guid`,`old_supplier_name`,`isactive`,`gst_no`,`created_at`,`created_by`,`updated_at`,`updated_by`) VALUES $exchild_main ");
 
-      $select_data_supplier = $this->db->query("SELECT a.* FROM lite_b2b.set_supplier a WHERE a.acc_code = 'PENDING' AND a.isactive = '9'");
+        //   echo $this->db->last_query();die;
 
-      foreach($select_data_supplier->result() as $row)
-      {
-        $process_supplier_guid = $row->supplier_guid;
-        $query_supplier_name = addslashes($row->supplier_name);
-        $check_max_acc_code = $this->db->query("SELECT MAX(acc_code) as max_code FROM lite_b2b.set_supplier WHERE acc_code LIKE CONCAT('D', LEFT('$query_supplier_name', 1), '%') AND isactive NOT IN ('9') ")->row('max_code');
-  
-        $get_digits_add_itiration =  $this->db->query("SELECT digits(right('$check_max_acc_code',4)) + 1 as num ")->row('num');
-  
-        $new_acc_code = $this->db->query("SELECT concat('D',LEFT('$query_supplier_name', 1), lpad('$get_digits_add_itiration', '4', '0') ) as new_code ")->row('new_code');
-        //echo $new_acc_code;die;
-  
-        $update_debtor_code = $this->db->query("UPDATE lite_b2b.set_supplier SET acc_code = '$new_acc_code', isactive = '1' WHERE supplier_guid = '$process_supplier_guid' AND isactive = '9' ");
-      }
+        //   $select_data_supplier = $this->db->query("SELECT a.* FROM lite_b2b.set_supplier a WHERE a.acc_code = 'PENDING' AND a.isactive = '9'");
+
+        //   foreach($select_data_supplier->result() as $row)
+        //   {
+        //     $process_supplier_guid = $row->supplier_guid;
+        //     $query_supplier_name = addslashes($row->supplier_name);
+        //     $check_max_acc_code = $this->db->query("SELECT MAX(acc_code) as max_code FROM lite_b2b.set_supplier WHERE acc_code LIKE CONCAT('D', LEFT('$query_supplier_name', 1), '%') AND isactive NOT IN ('9') ")->row('max_code');
+    
+        //     $get_digits_add_itiration =  $this->db->query("SELECT digits(right('$check_max_acc_code',4)) + 1 as num ")->row('num');
+    
+        //     $new_acc_code = $this->db->query("SELECT concat('D',LEFT('$query_supplier_name', 1), lpad('$get_digits_add_itiration', '4', '0') ) as new_code ")->row('new_code');
+        //     //echo $new_acc_code;die;
+    
+        //     $update_debtor_code = $this->db->query("UPDATE lite_b2b.set_supplier SET acc_code = '$new_acc_code', isactive = '1' WHERE supplier_guid = '$process_supplier_guid' AND isactive = '9' ");
+        //   }
   
       //echo $this->db->last_query(); die;
   
@@ -2174,7 +2215,7 @@ class Supplier_setup_new extends CI_Controller
       } else {
         $data = array(
           'para1' => 1,
-          'msg' => 'Error Import.',
+          'msg' => 'Error Import. Please check data got duplicate.',
   
         );
         echo json_encode($data);

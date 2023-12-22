@@ -768,7 +768,7 @@ class Email_report extends CI_Controller
         $bodyContent    = $this->load->view('email_template/user_login_reset_view',$email_data,TRUE);
         // echo $bodyContent;die;  
         // die;    
-		$send_result = $this->Send_email_model->send_mailjet_third_party($email_add, '', $bodyContent, $subject, '', '', '', 'no-reply@sunshineonline.com.my','');
+		$send_result = $this->Send_email_model->send_mailjet_third_party($email_add, '', $bodyContent, $subject, '', '', '', 'register@xbridge.my','');
 
         $data_email = array(
           'guid' => $this->db->query("SELECT upper(replace(uuid(),'-','')) as guid")->row('guid'),
@@ -777,7 +777,7 @@ class Email_report extends CI_Controller
           'customer_guid' => $customer_guid,
           'user_guid' => $get_user_array->row('user_guid'),
           'status' => $send_result,
-          'from_email' => 'no-reply@sunshineonline.com.my',
+          'from_email' => 'register@xbridge.my',
           'email_id' => $email_add,
           'subject' => $subject,
           'content' => $bodyContent,

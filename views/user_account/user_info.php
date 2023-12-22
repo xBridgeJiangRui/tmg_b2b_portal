@@ -99,7 +99,7 @@
               <?php foreach($get_supplier as $row)
               {
                 ?>
-                <option value="<?php echo $row->supplier_guid?>" name_val="<?php echo $row->supplier_name?>" ><?php echo $row->supplier_name?></option>
+                <option value="<?php echo $row->supplier_guid?>" name_val="<?php echo $row->supplier_name?>" supplier_transfer_b2b_val ="<?php echo $row->transfer_b2b?>" ><?php echo $row->supplier_name?></option>
                 <?php
               }
               ?>
@@ -208,7 +208,8 @@ $(document).ready(function() {
   $('.for_supp_name').addClass('pill_button');
   $('.for_supp_name').html(supplier_name);
   // $('#append_supplier').html(supplier_name);
-  //console.log(supplier_name); 
+
+  // console.log(supplier_transfer_b2b); 
 
   $(document).on('change','#select_supplier',function(){
     supplier_guid = $('#select_supplier').val();
@@ -857,6 +858,7 @@ $(document).ready(function() {
   $(document).on('click','#create_new_user',function(){
 
     var count_value_register = $('#count_value_register').attr('value');
+    var supplier_transfer_b2b = $('#select_supplier option:selected').attr('supplier_transfer_b2b_val');
 
     if(supplier_guid == '')
     {
@@ -864,9 +866,25 @@ $(document).ready(function() {
       return;
     }
 
-    if(count_value_register % 5 == 0)
+    if(supplier_transfer_b2b == '' || supplier_transfer_b2b == 'null' || supplier_transfer_b2b == null)
     {
-      alert('Notes : Additional fees will be charge up to 5 persons.\nCurrent User Account : '+count_value_register);
+      alert('Invalid Process. Please Contact Support');
+      return;
+    }
+
+    if(supplier_transfer_b2b == '0')
+    {
+      if(count_value_register % 5 == 0)
+      {
+        alert('Notes : Additional fees will be charged up to 5 persons.\nCurrent User Account : '+count_value_register);
+      }
+    }
+    else
+    {
+      if(count_value_register >= 2)
+      {
+        alert('Notes : Additional fees RM100 will be charged for subsequent account. \nCurrent User Account : '+count_value_register);
+      }
     }
 
     window.location = "<?= site_url('User_account_setting/information?link=');?>"+supplier_guid;

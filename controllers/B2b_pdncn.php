@@ -17,6 +17,7 @@ class b2b_pdncn extends CI_Controller
         $this->load->model('GR_model');
         $this->load->model('Datatable_model');
         $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
+        $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
     }
 
     public function index()
@@ -351,7 +352,7 @@ class b2b_pdncn extends CI_Controller
         }
         
         $refno = $_REQUEST['refno'];
-        $url = $this->jasper_ip . "/jasperserver/rest_v2/reports/reports/PandaReports/Backend_PDN_PCN/main_jrxml.pdf?refno=".$refno; 
+        $url = $this->jasper_ip . $this->jasper_path. "/Backend_PDN_PCN/main_jrxml.pdf?refno=".$refno; 
         //print_r($url); die;
         $check_code = $this->db->query("SELECT supplier_code from b2b_summary.cndn_amt_info where refno = '$refno' and customer_guid = '" . $_SESSION['customer_guid'] . "' GROUP BY refno")->row('supplier_code');
 

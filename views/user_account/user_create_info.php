@@ -187,8 +187,9 @@ $(document).ready(function () {
   var process_action_status = '<?php echo $process_action_status;?>';
   var get_registered_count = '<?php echo $get_registered_count; ?>';
   var admin_guid = '<?php echo $admin_guid; ?>';
+  var supplier_transfer_b2b = '<?php echo $transfer_b2b; ?>';
 
-  // console.log(admin_guid); 
+  // console.log(supplier_transfer_b2b); 
   $.ajax({
     url:"<?php echo site_url('User_account_setting/list_info');?>",
     method:"POST",
@@ -269,13 +270,27 @@ $(document).ready(function () {
 
       methodd += '<div class="col-md-6" >';
 
-      if(get_registered_count % 5 == 0 && process_action_status != 'EDIT')
+      if(supplier_transfer_b2b == '1')
       {
-        
-        methodd += '<mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing month. </mark>';
+        if(get_registered_count >= 2 && process_action_status != 'EDIT')
+        {
+          
+          methodd += '<mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing cycle. </mark>';
 
-        methodd += '<div class="clearfix"></div><br/>';
+          methodd += '<div class="clearfix"></div><br/>';
 
+        }
+      }
+      else
+      {
+        if(get_registered_count % 5 == 0 && process_action_status != 'EDIT')
+        {
+          
+          methodd += '<mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing cycle. </mark>';
+
+          methodd += '<div class="clearfix"></div><br/>';
+
+        }
       }
 
       methodd += '<table width="100%" >';
@@ -326,7 +341,7 @@ $(document).ready(function () {
 
       methodd += '<div class="clearfix"></div>';
 
-      methodd += '<div class="form-group"><label>Auto Mapping (Branch/Outlet)</label><select class="form-control" name="add_limited_location" id="add_limited_location" '+disabled+'> <option value=""> -SELECT DATA- </option> <option value="1"> YES </option> <option value="0" > NO </option> </select></div>';
+      methodd += '<div class="form-group"><label>Auto Mapping (Branch/Outlet)</label><select class="form-control" name="add_limited_location" id="add_limited_location" '+disabled+'> <option value=""> -SELECT DATA- </option> <option value="0"> YES </option> <option value="1" > NO </option> </select></div>';
 
       // methodd += '<div class="form-group"><label>Daily Notification</label><select class="form-control" name="add_notification" id="add_notification" > <option value=""> -SELECT DATA- </option> <option value="1"> YES </option> <option value="0" > NO </option> </select></div>';
 
@@ -544,8 +559,8 @@ $(document).ready(function () {
               {
                 json = JSON.parse(result); 
 
-                console.log(json);
-                console.log(Object.keys(json['data']).length);
+                // console.log(json);
+                // console.log(Object.keys(json['data']).length);
 
                 if(Object.keys(json['data']).length == 0)
                 {

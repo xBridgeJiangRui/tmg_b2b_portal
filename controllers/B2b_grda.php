@@ -17,6 +17,7 @@ class b2b_grda extends CI_Controller
         //$this->load->model('General_model');
         $this->load->model('Datatable_model');
         $this->jasper_ip = $this->file_config_b2b->file_path_name($customer_guid,'web','general_doc','jasper_invoice_ip','GDJIIP');
+        $this->jasper_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','general_doc','jasper_document_path','GDJDP');
     }
 
     public function index()
@@ -354,13 +355,18 @@ class b2b_grda extends CI_Controller
 
     public function grda_report()
     {
+        $get_status = $this->db->query("SELECT `status` FROM lite_b2b.jasper_server WHERE isactive = '1'")->row('status');
+
+        if($get_status == '0')
+        {
+            print_r('Report Under Maintenance.'); 
+            die;
+        }
+
         $refno = $_REQUEST['refno'];
-        // $refno = 'KKDGR22040683';
-        //$url = "http://127.0.0.1:59090/jasperserver/rest_v2/reports/reports/PandaReports/Backend_PO/main_jrxml.pdf?refno=".$refno; // po
-        //$url = "http://127.0.0.1:59090/jasperserver/rest_v2/reports/reports/PandaReports/Backend_GRN/gr_supplier_copy.pdf?refno=BLPGR22030862"; // grn
-        $url = $this->jasper_ip ."/jasperserver/rest_v2/reports/reports/PandaReports/Backend_GRN/GRDA.pdf?refno=".$refno; // grda
-        //$url = "http://127.0.0.1:59090/jasperserver/rest_v2/reports/reports/PandaReports/Backend_Promotion/promo_claim_inv.pdf?refno=BT1PCI19090033"; // PCI
-        //$url = "http://127.0.0.1:59090/jasperserver/rest_v2/reports/reports/PandaReports/Backend_DIncentives/display_incentive_report.pdf?refno=RBDI20010018"; // DI
+
+        $url = $this->jasper_ip . $this->jasper_path . "/Backend_GRN/GRDA.pdf?refno=".$refno; // grda
+
         //print_r($url); die;
         $check_code = $this->db->query("SELECT b.supplier_code from b2b_summary.grmain_dncn_info a INNER JOIN b2b_summary.grmain_info b ON a.refno = b.refno where a.refno = '$refno' and a.customer_guid = '" . $_SESSION['customer_guid'] . "' GROUP BY a.refno")->row('supplier_code');
 

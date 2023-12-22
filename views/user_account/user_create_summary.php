@@ -127,12 +127,25 @@
           ?>
         </ul>
         <div class="tab-content" >
+          
           <?php
-          if($get_registered_count % 5 == 0 && $process_action_status != 'EDIT')
+          if($transfer_b2b == '1')
           {
-            ?>
-            <mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing month. </mark>
-            <?php
+            if($get_registered_count >= 2 && $process_action_status != 'EDIT')
+            {
+              ?>
+              <mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing cycle. </mark>
+              <?php
+            }
+          }
+          else
+          {
+            if($get_registered_count % 5 == 0  && $process_action_status != 'EDIT')
+            {
+              ?>
+              <mark style="background-color:yellow;font-weight:bold;font-size:16px;">Current User Account : <?php echo $get_registered_count; ?> <br> Additional fees will be charge in your next billing cycle. </mark>
+              <?php
+            }
           }
           ?>
 

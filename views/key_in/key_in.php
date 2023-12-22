@@ -86,7 +86,7 @@
     });
 </script>
 </head>
-<body class="hold-transition skin-yellow layout-top-nav" onload='myBizdate()'>
+<body class="hold-transition skin-blue layout-top-nav" onload='myBizdate()'>
 <div class="wrapper">
 
   <header class="main-header">

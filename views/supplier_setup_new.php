@@ -46,7 +46,7 @@
 
               <button id="import_attribute" type="button" class="btn btn-xs btn-primary"><i class="glyphicon glyphicon-plus" aria-hidden="true" ></i> Import Create Supplier</button>
 
-              <button title="Create" onclick="reg_supplier()" type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#regsupplier" data-table="<?php echo 'set_supplier' ?>" data-mode="<?php echo 'create' ?>"><i class="glyphicon glyphicon-plus"></i>Create</button>
+              <!-- <button title="Create" onclick="reg_supplier()" type="button" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#regsupplier" data-table="<?php echo 'set_supplier' ?>" data-mode="<?php echo 'create' ?>"><i class="glyphicon glyphicon-plus"></i>Create</button> -->
 
               <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
               <!-- <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-remove"></i></button> -->
@@ -607,7 +607,7 @@
         ],
 
 
-        dom: '<"row"<"col-sm-4" l><"col-sm-8" f>>rtip',
+        dom: '<"row"<"col-sm-4" l><"col-sm-8" f>>Brtip',
 
 
         // "pagingType": "simple_numbers",

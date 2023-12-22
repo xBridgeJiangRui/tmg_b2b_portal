@@ -551,7 +551,7 @@ $(document).ready(function () {
 
     methodd += '<div class="col-md-12"><input type="hidden" class="form-control input-xm" id="template_guid" value="'+template_guid+'" readonly/> </div>';
 
-    methodd += '<div class="col-md-6"><label>Retailer Name</label> <select class="form-control select2" name="acc_guid" id="acc_guid"> <option value="" disabled selected>-Select Email Group-</option>  <?php foreach($get_acc as $row) { ?> <option value="<?php echo $row->acc_guid?>"><?php echo addslashes($row->acc_name) ?></option> <?php } ?></select> </div>';
+    methodd += '<div class="col-md-6"><label>Retailer Name</label> <select class="form-control select2" name="acc_guid" id="acc_guid"> <option value="" disabled selected>-Select Email Group-</option>  <?php foreach($get_acc as $row) { ?> <option value="<?php echo $row->acc_guid?>" selected><?php echo addslashes($row->acc_name) ?></option> <?php } ?></select> </div>';
 
     methodd += '<div class="col-md-6"><label>Email Group</label> <select class="form-control select2" name="email_group" id="email_group"> <option value="" disabled selected>-Select Email Group-</option>  <?php foreach($get_email_group as $row) { ?> <option value="<?php echo $row->guid?>"><?php echo addslashes($row->description) ?></option> <?php } ?></select> </div>';
 

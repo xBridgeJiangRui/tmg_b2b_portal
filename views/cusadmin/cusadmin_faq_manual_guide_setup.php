@@ -625,7 +625,7 @@ $(document).on('click', '#manual_guide_table .Manual_Edit', function(){
 
   methodd += '<div class="col-md-12"> <div class="form-group"> <label for="">Manual Guide Upload</label> <input type="file" name="file[]"> <p class="help-block">Limit 1 File</p> </div> </div>';
 
-  methodd += '<div class="col-md-12"> <p>File Name : <a href="<?php echo base_url('asset/manual_guide/')?>'+file_name+'" download="'+file_name+'" >'+file_name+'</a></p> </div>';
+  methodd += '<div class="col-md-12"> <p>File Name : <a href="<?php echo base_url('/b2b-pdf/tmg/asset/manual_guide/')?>'+file_name+'" download="'+file_name+'" >'+file_name+'</a></p> </div>';
 
   methodd += '<div class="col-md-12"><input value="'+guide_guid+'" required="true" type="hidden" id="guide_guid" name="guide_guid" class="form-control" value="" /></div>';
 

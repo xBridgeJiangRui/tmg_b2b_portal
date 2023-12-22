@@ -1034,6 +1034,8 @@ class CusAdmin_controller extends CI_Controller {
 
             $check_block_edit_cost = $this->db->query("SELECT COUNT(*) AS result FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'lite_b2b' AND TABLE_NAME = 'acc_settings' AND COLUMN_NAME = 'block_edit_cost'")->row('result');
 
+            $check_remove_unproposed_child = $this->db->query("SELECT COUNT(*) AS result FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'lite_b2b' AND TABLE_NAME = 'acc_settings' AND COLUMN_NAME = 'remove_unproposed_child'")->row('result');
+
             if($check_mandatory_accept_po == '0'){
                 $this->db->query("ALTER TABLE lite_b2b.`acc_settings` 
                 ADD COLUMN `supplier_mandatory_to_accept_po` TINYINT(1) DEFAULT '0';");
@@ -1062,6 +1064,11 @@ class CusAdmin_controller extends CI_Controller {
             if($check_block_edit_cost == '0'){
                 $this->db->query("ALTER TABLE lite_b2b.`acc_settings` 
                 ADD COLUMN `block_edit_cost` TINYINT(1) DEFAULT '0';");
+            }
+
+            if($check_remove_unproposed_child == '0'){
+                $this->db->query("ALTER TABLE lite_b2b.`acc_settings` 
+                ADD COLUMN `remove_unproposed_child` TINYINT(1) DEFAULT '0';");
             }
 
             $data = array(
@@ -1211,6 +1218,7 @@ class CusAdmin_controller extends CI_Controller {
             $propose_doc_api = $this->input->post('propose_doc_api');
             $portal_live_date = $this->input->post('portal_live_date');
             $show_additional_info = $this->input->post('show_additional_info');
+            $remove_unproposed_child = $this->input->post('remove_unproposed_child');
             $block_edit_cost = $this->input->post('block_edit_cost');
 
             if($grn_e_invoice_start_date == '')
@@ -1300,6 +1308,7 @@ class CusAdmin_controller extends CI_Controller {
                     'propose_doc_api' => $propose_doc_api,
                     'portal_live_date' => $portal_live_date,
                     'show_additional_info' => $show_additional_info,
+                    'remove_unproposed_child' => $remove_unproposed_child,
                     'block_edit_cost' => $block_edit_cost,
                 ); 
                 // var_dump($data);die;
@@ -1341,6 +1350,7 @@ class CusAdmin_controller extends CI_Controller {
                     'propose_doc_api' => $propose_doc_api,
                     'portal_live_date' => $portal_live_date,
                     'show_additional_info' => $show_additional_info,
+                    'remove_unproposed_child' => $remove_unproposed_child,
                     'block_edit_cost' => $block_edit_cost,
                 );  
                 $this->db->insert('acc_settings', $data);  
@@ -1582,6 +1592,8 @@ class CusAdmin_controller extends CI_Controller {
         $old_file_name = $this->input->post('file_name');
 
         $file_config_main_path = $this->file_config_b2b->file_path_name($this->session->userdata('customer_guid'),'web','manual_guide','main_path','MNLG');
+
+        // print_r($file_config_main_path); die;
 
         $old_file_path = $file_config_main_path.'/'.$old_file_name;
 
@@ -1923,9 +1935,11 @@ class CusAdmin_controller extends CI_Controller {
         $announcement_guid = $this->input->post('announcement_guid');
 
         $file_name = str_replace(' ','_',$file_name); 
-        $defined_path = $file_config_sec_path.$acc_guid.'/'.$announcement_guid.'/';
+        $defined_path = $file_config_main_path.$acc_guid.'/'.$announcement_guid.'/';
 
         $extension = explode('.', $file_name );
+
+        // print_r($defined_path); die;
 
         if(count($extension) > 2)
         {
@@ -1946,13 +1960,13 @@ class CusAdmin_controller extends CI_Controller {
         //$cur_date = str_replace(':','',$cur_date);
         //$file_name = $cur_date.'_'.$file_name;
 
-        $unlink_path = $file_config_sec_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name;
+        $unlink_path = $file_config_main_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name;
 
         if(file_exists($unlink_path)){
         unlink($unlink_path);
         }
 
-        $check_path = $file_config_sec_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name;
+        $check_path = $file_config_main_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name;
 
         if (file_exists($check_path)) {
             $data = array(
@@ -1964,7 +1978,7 @@ class CusAdmin_controller extends CI_Controller {
         }
 
         //$url_link = 'https://b2b.xbridge.my/ann_doc/'.$acc_guid.'/'.$file_name.'';
-        $url_link = $file_config_main_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name.'';
+        $url_link = $file_config_sec_path.$acc_guid.'/'.$announcement_guid.'/'.$file_name.'';
 
         $config['upload_path']          = $defined_path;
         $config['allowed_types']        = '*';

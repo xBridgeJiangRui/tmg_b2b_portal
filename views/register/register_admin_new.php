@@ -172,10 +172,11 @@
                         <th>No.of Register</th>
                         <th>No.of Participants</th>
                         <th>Status</th>
-                        <th>Created At</th>
-                        <th>Created By</th>
+                        <th>Waive B2B</th>
                         <th>Updated At</th>
                         <th>Updated By</th>
+                        <th>Created At</th>
+                        <th>Created By</th>
                         
                     </tr>
                     </thead>
@@ -210,7 +211,7 @@ $(document).ready(function() {
           else
           {
             ?>
-            { visible: false, targets: [0,5,6,9,10,11,12,13,14]}
+            { visible: false, targets: [0,5,6,9,10,11,12,13,14,15]}
             <?php
           }
           ?>
@@ -300,6 +301,22 @@ $(document).ready(function() {
                     { "data": "cnt" },
                     { "data": "part_cnt" },
                     { "data": "form_status" },
+                    { "data": "transfer_b2b" , render:function( data, type, row ){
+
+                    var element = '';
+
+                    if(data == '1')
+                    {
+                      element += 'Yes';
+                    }
+                    else
+                    {
+                      element += 'No';
+                    }
+
+                    return element;
+
+                    }},
                     { "data": "update_at" },
                     { "data": "update_by" },
                     { "data": "create_at" },
@@ -348,6 +365,7 @@ $(document).ready(function() {
                 $(nRow).find('td:eq(12)').css({"background-color":"#ffff33","color":"black"});
                 $(nRow).find('td:eq(13)').css({"background-color":"#ffff33","color":"black"});
                 $(nRow).find('td:eq(14)').css({"background-color":"#ffff33","color":"black"});
+                $(nRow).find('td:eq(15)').css({"background-color":"#ffff33","color":"black"});
               }
               else if(aData['form_status'] == 'Archived')
               {
@@ -366,6 +384,7 @@ $(document).ready(function() {
                 $(nRow).find('td:eq(12)').css({"background-color":"#ff6b6b","color":"black"});
                 $(nRow).find('td:eq(13)').css({"background-color":"#ff6b6b","color":"black"});
                 $(nRow).find('td:eq(14)').css({"background-color":"#ff6b6b","color":"black"});
+                $(nRow).find('td:eq(15)').css({"background-color":"#ffff33","color":"black"});
               }
             <?php
             }
@@ -471,7 +490,7 @@ $(document).ready(function() {
     var form_status = $(this).attr('form_status');
     var comp_contact = $(this).attr('comp_contact');
     var sec_comp_contact = $(this).attr('second_comp_contact');
-    var url_link = "https://supplier.tunasmanja.com/index.php/Supplier_registration/register_form_edit?link="+register_guid;
+    var url_link = "https://tunasmanja.xbridge.my/index.php/Supplier_registration/register_form_edit?link="+register_guid;
     var comp_no = $(this).attr('comp_no');
     var outright_template = $(this).attr('outright_template');
     var consignment_template = $(this).attr('consignment_template');
@@ -484,6 +503,7 @@ $(document).ready(function() {
     var waive_start_date = $(this).attr('waive_start_date');
     var waive_end_date = $(this).attr('waive_end_date');
     var is_invoice = $(this).attr('isinvoice');
+    var transfer_b2b = $(this).attr('transfer_b2b');
 
     if(outright_start_date == '0000-00-00')
     {
@@ -549,6 +569,8 @@ $(document).ready(function() {
 
     methodd += '<div class="col-md-6"><label>Billing Invoice</label> <select class="form-control" name="edit_is_invoice" id="edit_is_invoice"> <option value="">-Select-</option> <option value="0" > Yes </option> <option value="1" > Billed </option> <option value="2" > No (Disable to bill) </option> </select> </div>';
 
+    methodd += '<div class="col-md-6"><label>Waive B2B</label> <select class="form-control" name="edit_transfer_b2b" id="edit_transfer_b2b"> <option value="">-Select-</option> <option value="1"> YES - Waive Registration Fees </option> <option value="0" > NO </option> </select> </div>';
+
     methodd += '<div class="col-md-12"><label>Vendor Code</label> <select class="select2 form-control" id="edit_acc_no" name="edit_acc_no" multiple="multiple" ></select> </div>';
 
     methodd +='<div class="clearfix"></div><br>';
@@ -608,6 +630,8 @@ $(document).ready(function() {
        $('#edit_waive_end').val(waive_end_date);
 
        $('#edit_is_invoice').val(is_invoice);
+
+       $('#edit_transfer_b2b').val(transfer_b2b);
        
        $('.select2').select2();
        $('#edit_memo_type').select2(); 
@@ -731,6 +755,7 @@ $(document).ready(function() {
     var edit_waive_start = $('#edit_waive_start').val();
     var edit_waive_end = $('#edit_waive_end').val();
     var edit_is_invoice = $('#edit_is_invoice').val();
+    var edit_transfer_b2b = $('#edit_transfer_b2b').val();
 
     if((edit_supp_name == '') || (edit_supp_name == null) || (edit_supp_name == 'null'))
     {
@@ -765,6 +790,12 @@ $(document).ready(function() {
     if(edit_form_status == '' || edit_form_status == 'null' || edit_form_status == null)
     {
       edit_form_status = 'default';
+    }
+
+    if((edit_transfer_b2b == '') || (edit_transfer_b2b == null) || (edit_transfer_b2b == 'null'))
+    {
+      alert('Please Select Waive B2B.');
+      return
     }
 
     if(edit_form_status != 'Terminated' && edit_form_status != 'Advance' )
@@ -936,7 +967,7 @@ $(document).ready(function() {
       $.ajax({
             url:"<?php echo site_url('Registration_new/edit_reg_app');?>",
             method:"POST",
-            data:{edit_reg_guid:edit_reg_guid,edit_email:edit_email,edit_acc_no:edit_acc_no,edit_memo_type:edit_memo_type,edit_form_status:edit_form_status,edit_comp_contact:edit_comp_contact,edit_sec_comp_contact:edit_sec_comp_contact,edit_supp_name:edit_supp_name,edit_comp_no:edit_comp_no,edit_outright_template:edit_outright_template,edit_consign_template:edit_consign_template,edit_cap_template:edit_cap_template,edit_waive_template:edit_waive_template,edit_outright_start:edit_outright_start,edit_consign_start:edit_consign_start,edit_cap_start:edit_cap_start,edit_cap_end:edit_cap_end,edit_waive_start:edit_waive_start,edit_waive_end:edit_waive_end,edit_is_invoice:edit_is_invoice},
+            data:{edit_reg_guid:edit_reg_guid,edit_email:edit_email,edit_acc_no:edit_acc_no,edit_memo_type:edit_memo_type,edit_form_status:edit_form_status,edit_comp_contact:edit_comp_contact,edit_sec_comp_contact:edit_sec_comp_contact,edit_supp_name:edit_supp_name,edit_comp_no:edit_comp_no,edit_outright_template:edit_outright_template,edit_consign_template:edit_consign_template,edit_cap_template:edit_cap_template,edit_waive_template:edit_waive_template,edit_outright_start:edit_outright_start,edit_consign_start:edit_consign_start,edit_cap_start:edit_cap_start,edit_cap_end:edit_cap_end,edit_waive_start:edit_waive_start,edit_waive_end:edit_waive_end,edit_is_invoice:edit_is_invoice,edit_transfer_b2b:edit_transfer_b2b},
             beforeSend:function(){
               $('.btn').button('loading');
             },

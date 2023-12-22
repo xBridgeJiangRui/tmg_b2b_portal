@@ -194,11 +194,60 @@ class Propose_po extends CI_Controller {
     public function propose_record()
     {   
         $customer_guid = $_SESSION['customer_guid'];
+        $current_date = $this->db->query("SELECT CURDATE() AS `current_date`;")->row('current_date');
 
-        // echo $this->view_child_listing($customer_guid, $_SESSION['transmain_guid']); die;
+        // echo $this->view_child_listing($customer_guid, '62716AF6DC774BA59B7EF3AD9B850DED'); die;
 
         $retailer = $this->db->query("SELECT acc_name FROM lite_b2b.acc WHERE acc_guid = '$customer_guid'")->row('acc_name');
         $acc_settings = $this->db->query("SELECT * from lite_b2b.acc_settings where customer_guid = '$customer_guid'");
+        $backend_db = $this->db->query("SELECT acc_name, b2b_database FROM lite_b2b.acc WHERE acc_guid = '$customer_guid'")->row('b2b_database');
+
+        $pending_list = $this->db->query("SELECT po.transmain_guid, po.remark_h, s.`pur_expiry_days`, DATE_ADD(po.`delivery_date`, INTERVAL s.`pur_expiry_days` DAY) AS expiry_date FROM $backend_db.`ts_pomain` po INNER JOIN $backend_db.`supcus` s ON po.`supplier_code` = s.`Code` WHERE po.`doc_status` = 'NEW' LIMIT 5")->result_array();
+
+        foreach($pending_list as $row){
+
+            $tranmain_guid = $row['transmain_guid'];
+            $expiry_date = $row['expiry_date'];
+            $remark_h = $row['remark_h'];
+
+            if($expiry_date < $current_date){
+
+                $data = array(
+                    'retailer'      => $customer_guid,
+                    'guid'          => $tranmain_guid,
+                    'doc_status'    => 'CANCELLED',
+                    'remark_h'      => $remark_h.' (Document Expired)'
+                );
+
+                // $_POST['retailer'] = ;
+                // $_POST['guid'] = ;
+                // $_POST['doc_status'] = ;
+                // $_POST['remark_h'] = ;
+
+                $ch = curl_init();	
+
+                curl_setopt_array($ch, array(	
+                    CURLOPT_URL => site_url('Propose_po/update_header_info'),	
+                    CURLOPT_RETURNTRANSFER => true,	
+                    CURLOPT_ENCODING => '',	
+                    CURLOPT_MAXREDIRS => 10,	
+                    CURLOPT_TIMEOUT => 0,	
+                    CURLOPT_FOLLOWLOCATION => true,	
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,	
+                    CURLOPT_CUSTOMREQUEST => 'POST',	
+                    CURLOPT_POSTFIELDS => json_encode($data),	
+                    CURLOPT_HTTPHEADER => array(	
+                    'Content-Type: application/json'	
+                    ),	
+                ));	
+
+                $response = curl_exec($ch);
+
+                curl_close($ch);
+            }
+            
+
+        }
 
         $sup_code = $this->session->userdata('query_supcode');
         $sup_code = str_replace("'", "", $sup_code);
@@ -276,6 +325,7 @@ class Propose_po extends CI_Controller {
                     'created_at'    => $header_result['created_at'],
                     'location_list' => $header_result['location_list'],
                     'remark_h'      => $header_result['remark_h'],
+                    'doc_status'    => $header_result['doc_status'],
                     'code'          => $code->result(),
                     'location'      => $location->result(),
                     'customer_guid' => $customer_guid,
@@ -287,6 +337,7 @@ class Propose_po extends CI_Controller {
             }else{
 
                 $data = array(
+                    'doc_status'    => '',
                     'code'          => $code->result(),
                     'location'      => $location->result(),
                     'customer_guid' => $customer_guid,
@@ -320,12 +371,25 @@ class Propose_po extends CI_Controller {
         $location = $this->input->post("outright_location");
         $refresh = isset($_POST['refresh']) ? $this->input->post("refresh") : 0;
 
+        // datatable filter data
+        $offset = isset($_POST['start']) ? $this->input->post("start") : 0;
+        $limit = isset($_POST['length']) ? $this->input->post("length") : 10;
+        $search = isset($_POST['search']['value']) ? $_POST['search']['value'] : '';
+
+        $filter_data = array(
+            'offset'    => $offset,
+            'limit'     => $limit,
+            'search'    => $search,
+        );
+
+        // print_r($this->view_child_listing($customer_guid, $_SESSION['transmain_guid'], 0, $filter_data));
+
         $username = $this->db->query("SELECT user_name FROM lite_b2b.set_user WHERE user_guid = '$user_guid' AND isactive = '1' LIMIT 1")->row('user_name');
 
         if($refresh == 1){
 
             if($_SESSION['outlet_count'] > 1){
-                $this->view_child_listing($customer_guid, $_SESSION['transmain_guid']);
+                $this->view_child_listing($customer_guid, $_SESSION['transmain_guid'], 0, $filter_data);
             }else{
                 $this->view_propose_info();
             }
@@ -640,10 +704,12 @@ class Propose_po extends CI_Controller {
 
     public function update_header_info()
     {   
+        $user_guid = $this->session->userdata("user_guid");
         $customer_guid = isset($_POST['retailer']) ? $_POST['retailer'] : $_SESSION['customer_guid'];
         $transmain_guid = isset($_POST['guid']) ? $_POST['guid'] : $_SESSION['transmain_guid'];
         $delivery_date = isset($_POST['delivery_date']) ? $_POST['delivery_date'] : '';
         $remark_h = isset($_POST['remark_h']) ? $_POST['remark_h'] : '';
+        $doc_status = isset($_POST['doc_status']) ? $_POST['doc_status'] : '';
 
         $data = array();
 
@@ -653,6 +719,12 @@ class Propose_po extends CI_Controller {
 
         if($remark_h != ''){
             $data['remark_h'] = $remark_h;
+        }
+
+        if($doc_status != '' && $doc_status == 'CANCELLED'){
+            $data['doc_status'] = $doc_status;
+            $data['updated_by'] = $this->db->query("SELECT user_name FROM lite_b2b.set_user WHERE user_guid = '$user_guid' AND isactive = '1' LIMIT 1")->row('user_name');
+            $data['updated_at'] = $this->current_datetime();
         }
 
         $acc_settings = $this->db->query("SELECT propose_doc_api from lite_b2b.acc_settings where customer_guid = '$customer_guid'");
@@ -712,7 +784,7 @@ class Propose_po extends CI_Controller {
         echo json_encode($data);  
     }
 
-    public function create_header(){
+    public function create_header_django(){ // will not be using this since this method will cause loading very long
 
         $user_guid = $this->session->userdata("user_guid");
         $customer_guid = $this->input->post("retailer");
@@ -782,6 +854,181 @@ class Propose_po extends CI_Controller {
 
     }
 
+    public function create_header(){
+        
+        $current_year = date('y');
+        $current_month = date('m');
+
+        $user_guid = $this->session->userdata("user_guid");
+        $customer_guid = $this->input->post("retailer");
+        $supplier = $this->input->post("outright_code");
+        $delivery_date = $this->input->post("delivery_date");
+        $supplier_info = explode('||', $supplier);
+        $supplier_code = $supplier_info[0];
+        $supplier_name = $supplier_info[1];
+        $location = $this->input->post("outright_location");
+        $remark = $this->input->post("remark");
+
+        if(!is_array($location)){
+            $location = explode(',', $location);
+        }
+
+        $formatted_location = "'" . implode("','", $location) . "'";
+
+        // Array ( [retailer] => 610BB0EA76AE11EDB37C72B64FC54D79 [outright_code] => 0599||Kim Success Enterprise [outright_location] => Array ( [0] => ASE [1] => ASE2 [2] => BMI ) [delivery_date] => 2023-12-16 )
+        // Array ( [retailer] => 610BB0EA76AE11EDB37C72B64FC54D79 [outright_code] => 0599||Kim Success Enterprise [outright_location] => ASE [delivery_date] => 2023-12-16 )
+
+        $username = $this->db->query("SELECT user_name FROM lite_b2b.set_user WHERE user_guid = '$user_guid' AND isactive = '1' LIMIT 1")->row('user_name');
+        $retailer = $this->db->query("SELECT acc_name, b2b_database from lite_b2b.acc where acc_guid = '$customer_guid'");
+        $retailer_name = $retailer->row('acc_name');
+        $backend_db = $retailer->row('b2b_database');
+
+        $company_profile_code = $this->db->query("SELECT comp_code FROM $backend_db.companyprofile LIMIT 1")->row('comp_code');
+        $sysrun = $this->db->query("SELECT * FROM $backend_db.mc_sysrun WHERE retailer_guid = '$customer_guid' AND type = 'PPO'");
+
+        $formatted_month = str_pad($sysrun->row('mm'), 2, '0', STR_PAD_LEFT);
+
+        if($current_year == $sysrun->row('yyyy') && $current_month == $formatted_month){
+            $current_no = $sysrun->row('current_no') + 1;
+        }else{
+            $this->db->query("UPDATE $backend_db.mc_sysrun SET yyyy = '$current_year', mm = '$current_month', updated_at = NOW(), updated_by = 'sysrun_lib_auto' WHERE retailer_guid = '$customer_guid' AND type = 'PPO'");
+            $current_no = 1;
+        }
+
+        $transmain_guid = $this->db->query("SELECT REPLACE(UPPER(UUID()),'-','') AS uuid")->row('uuid');
+
+        $formatted_no = str_pad($current_no, $sysrun->row('no_digit'), '0', STR_PAD_LEFT);
+        $doc_refno = $company_profile_code . $sysrun->row('code') . $current_year . $current_month . $formatted_no;
+
+        // insert pomain
+        $this->db->query("
+            INSERT INTO $backend_db.`ts_pomain` (
+                `transmain_guid`,
+                `refno`,
+                `retailer_guid`,
+                `retailer_name`,
+                `supplier_code`,
+                `supplier_name`,
+                `delivery_date`,
+                `doc_status`,
+                `created_by`,
+                `created_at`,
+                `updated_by`,
+                `updated_at`,
+                `remark_h`
+            )
+            VALUES
+                (
+                '$transmain_guid',
+                '$doc_refno',
+                '$customer_guid',
+                '$retailer_name',
+                '$supplier_code',
+                '$supplier_name',
+                '$delivery_date',
+                'NEW',
+                '$username',
+                NOW(),
+                '$username',
+                NOW(),
+                '$remark'
+            );  
+        ");
+
+        // insert pochild
+        $this->db->query("
+            INSERT INTO $backend_db.`ts_pochild`  
+            (SELECT
+                REPLACE(UPPER(UUID()),'-','')       AS `transchild_guid`,
+                (@row_number := @row_number + 1)    AS line,
+                `im`.`ItemLink`                     AS `itemlink`,
+                `imsc`.`Itemcode`                   AS `itemcode`,
+                `im`.`cost_code`                    AS `barcode`,
+                `im`.`Description`                  AS `description`,
+                null                                AS `order_qty`,
+                null                                AS `foc_qty`,
+                '0.00'                              AS `qty`,
+                null                                AS `amount`,
+                null                                AS `net_cost`,
+                `imsc`.`OrderLotSize`               AS `orderlotsize`,
+                `im`.`ArticleNo`                    AS `article`,
+                `im`.`Dept`                         AS `dept`,
+                `im`.`SubDept`                      AS `subdept`,
+                `im`.`Category`                     AS `category`,
+                `im`.`Manufacturer`                 AS `manufacturer`,
+                `im`.`Brand`                        AS `brand`,
+                `imsc`.`SupBulkQty`                 AS `ctn_qty`,
+                `im`.`PackSize`                     AS `packsize`,
+                `im`.`um`                           AS `um`,
+                `im`.`UMBulk`                       AS `umbulk`,
+                '$username'                         AS `created_by`,
+                NOW()                               AS `created_at`,
+                '$username'                         AS `updated_by`,
+                NOW()                               AS `updated_at`,
+                '$transmain_guid'                   AS `transmain_guid`,
+                ''                                  AS `remark_c`
+            FROM (($backend_db.`itemmastersupcode` `imsc`
+                JOIN $backend_db.`itemmaster` `im`
+                    ON ((`imsc`.`Itemcode` = `im`.`Itemcode`)))
+                JOIN $backend_db.`itemmaster_branch_stock` `imbs`
+                    ON ((`imsc`.`Itemcode` = `imbs`.`itemcode`)))
+                JOIN (SELECT @row_number := 0) AS dummy 
+            WHERE imsc.`Code` = '$supplier_code' AND imbs.`branch` IN ($formatted_location))
+        ");
+
+        // insert pochild2
+        $this->db->query("
+            INSERT INTO $backend_db.`ts_pochild_2`  
+            (SELECT
+                REPLACE(UPPER(UUID()),'-','')           AS `transchild2_guid`,
+                `imbs`.`branch`                         AS `location`,
+                '0'			                            AS `foc_group`,
+                '0'			                            AS `proposed_qty`,
+                '0'			                            AS `proposed_amount`,
+                '0'			                            AS `qty`,
+                '0'			                            AS `qty_foc`,
+                `imsc`.`NetUnitPrice`                   AS `cost`,
+                `imbs`.`qty_opn`                        AS `qty_opn`,
+                `imbs`.`qty_rec`                        AS `qty_rec`,
+                (`imbs`.`qty_pos` + `imbs`.`qty_si`)    AS `qty_sold`, 
+                `imbs`.`qty_other`                      AS `qty_other`,
+                `imbs`.`QOH`                            AS `qty_bal`,
+                `imbs`.`qty_tbr`                        AS `qty_tbr`,
+                `imbs`.`ads`                            AS `ads`,
+                `imbs`.`aws`                            AS `aws`,
+                `imbs`.`ams`                            AS `ams`,
+                `imbs`.`days`                           AS `days`,
+                '$username'		                        AS `created_by`,
+                NOW()			                        AS `created_at`,
+                '$username'		                        AS `updated_by`,
+                NOW()			                        AS `updated_at`,
+                poc.transchild_guid                     AS `transchild_guid`,
+                `imsc`.`NetUnitPrice`                   AS `ori_cost`
+            FROM (($backend_db.`itemmastersupcode` `imsc`
+                JOIN $backend_db.`itemmaster` `im`
+                    ON ((`imsc`.`Itemcode` = `im`.`Itemcode`)))
+                JOIN $backend_db.`itemmaster_branch_stock` `imbs`
+                ON ((`imsc`.`Itemcode` = `imbs`.`itemcode`)))
+            JOIN $backend_db.`ts_pochild` poc
+            ON (poc.`itemcode` = imbs.`itemcode`) 
+            WHERE imsc.`Code` = '$supplier_code' AND imbs.`branch` IN ($formatted_location) AND poc.`transmain_guid` = '$transmain_guid')
+        ");
+
+        $response = array(
+            'status'            => true,
+            'refno'             => $doc_refno,
+            'transmain_guid'    => $transmain_guid,
+            'updated_by'        => $username
+        );
+
+        $_SESSION['transmain_guid'] = $transmain_guid;
+
+        $this->db->query("UPDATE $backend_db.mc_sysrun SET current_no = '$current_no', updated_at = NOW(), updated_by = 'sysrun_lib_auto' WHERE retailer_guid = '$customer_guid' AND type = 'PPO'");
+
+        echo json_encode($response);
+
+    }
+
     public function generate_po_replenishment($customer_guid, $location, $user_guid, $supplier_code, $supplier_name, $delivery_date){
 
         $retailer_name = $this->db->query("SELECT acc_name from lite_b2b.acc where acc_guid = '$customer_guid'")->row('acc_name');
@@ -838,15 +1085,23 @@ class Propose_po extends CI_Controller {
 
         $username = $this->db->query("SELECT user_name FROM lite_b2b.set_user WHERE user_guid = '$user_guid' AND isactive = '1' LIMIT 1")->row('user_name');
 
-        $acc_settings = $this->db->query("SELECT propose_doc_api from lite_b2b.acc_settings where customer_guid = '$customer_guid'");
+        $acc_settings = $this->db->query("SELECT propose_doc_api, remove_unproposed_child from lite_b2b.acc_settings where customer_guid = '$customer_guid'");
         $api_url = trim($acc_settings->row('propose_doc_api'), "/");
+
+        $retailer = $this->db->query("SELECT b2b_database FROM lite_b2b.acc WHERE acc_guid = '$customer_guid'");
+        $backend_db = $retailer->row('b2b_database');
+
+        if($acc_settings->row('remove_unproposed_child') == 1){
+            $this->db->query("DELETE c2 FROM $backend_db.ts_pochild_2 c2 INNER JOIN $backend_db.ts_pochild c ON c2.transchild_guid = c.transchild_guid WHERE c.transmain_guid = '$transmain_guid' AND (c2.qty + c2.`qty_foc`) = 0");
+            $this->db->query("DELETE FROM $backend_db.ts_pochild WHERE transmain_guid = '$transmain_guid' AND qty = 0");
+        }
 
         $to_shoot_url = $api_url."/purchase_order/pomain/post_po_replenishment";
 
         $data = array(
-            'retailer_guid' => $customer_guid,
-            'transmain_guid' => $transmain_guid,
-            'updated_by' => $username,
+            'retailer_guid'             => $customer_guid,
+            'transmain_guid'            => $transmain_guid,
+            'updated_by'                => $username,
         );
 
         // echo $to_shoot_url; echo '</br>'; echo json_encode($data); die;
@@ -869,8 +1124,6 @@ class Propose_po extends CI_Controller {
         $response = json_encode($response);
 
         echo trim(stripslashes($response), '"');
-
-
     }
 
     public function view_propose_info(){
@@ -970,7 +1223,7 @@ class Propose_po extends CI_Controller {
 
     }
 
-    public function view_child_listing($customer_guid, $transmain_guid, $return_response = 0){
+    public function view_child_listing_django($customer_guid, $transmain_guid, $return_response = 0){
 
         $acc_settings = $this->db->query("SELECT propose_doc_api from lite_b2b.acc_settings where customer_guid = '$customer_guid'");
         $api_url = trim($acc_settings->row('propose_doc_api'), "/");
@@ -1013,6 +1266,39 @@ class Propose_po extends CI_Controller {
 
     }
 
+    public function view_child_listing($customer_guid, $transmain_guid, $return_response = 0, $filter_data = array()){
+
+        $retailer = $this->db->query("SELECT b2b_database FROM lite_b2b.acc WHERE acc_guid = '$customer_guid'");
+        $backend_db = $retailer->row('b2b_database');
+
+        $search_query = '';
+        $limit_query = '';
+
+        if(isset($filter_data['search']) && $filter_data['search'] != ''){
+            $search = $filter_data['search'];
+
+            $search_query = " AND (itemcode LIKE '%$search%' OR itemlink LIKE '%$search%' OR barcode LIKE '%$search%' OR article LIKE '%$search%' OR `description` LIKE '%$search%')";
+        }
+
+        if(isset($filter_data['offset']) && isset($filter_data['limit'])){
+            $offset = $filter_data['offset'];
+            $limit = $filter_data['limit'];
+
+            $limit_query = " LIMIT $offset, $limit";
+        }
+
+        // echo "SELECT * FROM $backend_db.ts_pochild WHERE transmain_guid = '$transmain_guid' $search_query $limit_query"; die;
+
+        $result['results'] = $this->db->query("SELECT * FROM $backend_db.ts_pochild WHERE transmain_guid = '$transmain_guid' $search_query $limit_query")->result_array();
+
+        if($return_response == 1){
+            return $result;
+        }else{
+            echo json_encode($result);
+        }
+
+    }
+
     public function view_header($return_response = 0, $filter_array = array(), $location = 0){
 
         $customer_guid = (isset($_GET['id']) || sizeof($filter_array) != 0) ? $this->session->userdata('customer_guid') : $this->input->post("retailer");
@@ -1034,16 +1320,24 @@ class Propose_po extends CI_Controller {
 
         if(isset($_POST['datatable_load'])){
 
+            $doc_status = isset($_POST['doc_status']) ? $_POST['doc_status'] : 'NEW';
+
             $sup_code = $this->session->userdata('query_supcode');
             $sup_code = str_replace("'", "", $sup_code);
 
             $data = array(
-                // 'supplier_code__in' => $sup_code, //nabil testing
-                'doc_status__in'    => 'NEW',
+                'supplier_code__in' => $sup_code,
+                'doc_status__in'    => $doc_status,
                 'search'            => isset($_POST['search']['value']) ? $_POST['search']['value'] : '',
                 'limit'             => isset($_POST['length']) ? $_POST['length'] : '10',
                 'offset'            => isset($_POST['start']) ? $_POST['start'] : '0',
             );
+
+            if($_SESSION['user_group_name'] == 'SUPER_ADMIN'){
+                if(isset($data['supplier_code__in'])){
+                    unset($data['supplier_code__in']);
+                }
+            }
 
             $queryString = http_build_query($data);
         }
@@ -1125,7 +1419,7 @@ class Propose_po extends CI_Controller {
         $replace = array("", ""); 
         
         $filter_array = array(
-            'supplier_code__in' => $sup_code, // nabil testing
+            'sup_code__in'      => $sup_code,
             'limit'             => isset($_POST['length']) ? $_POST['length'] : '10',
             'offset'            => isset($_POST['start']) ? $_POST['start'] : '0',
             'search'            => isset($_POST['search']['value']) ? $_POST['search']['value'] : '',
@@ -1134,6 +1428,12 @@ class Propose_po extends CI_Controller {
             // 'po_refno'          => isset($_POST['columns'][7]['search']['value']) ? str_replace($search, $replace, $_POST['columns'][7]['search']['value']) : '',
             'doc_status__in'    => isset($_POST['columns'][8]['search']['value']) ? str_replace($search, $replace, $_POST['columns'][8]['search']['value']) == 'AWAITING APPROVAL' ? 'POSTED,PROCESSING' : str_replace($search, $replace, $_POST['columns'][8]['search']['value']) : '',
         );
+
+        if($_SESSION['user_group_name'] == 'SUPER_ADMIN'){
+            if(isset($filter_array['sup_code__in'])){
+                unset($filter_array['sup_code__in']);
+            }
+        }
 
         if(isset($_POST['order'][0])){
 
@@ -1379,7 +1679,12 @@ class Propose_po extends CI_Controller {
         $backend_db = $retailer->row('b2b_database');
 
         $filename = $refno."-ProposedPO";
-        $url = $jasper_ip . "/jasperserver/rest_v2/reports/reports/PandaReports/Backend_PO/Proposed_Purchase_Order.pdf?db_be=".$backend_db."&refno=".$refno;
+
+        if($customer_guid == '833DF49D303711EE857842010A940003'){ // tunas manja
+            $url = $jasper_ip . "/jasperserver/rest_v2/reports/reports/TMG_PandaReports/Backend_PO/Proposed_Purchase_Order.pdf?db_be=".$backend_db."&refno=".$refno;
+        }else{
+            $url = $jasper_ip . "/jasperserver/rest_v2/reports/reports/PandaReports/Backend_PO/Proposed_Purchase_Order.pdf?db_be=".$backend_db."&refno=".$refno;
+        }
 
         $curl = curl_init();
 

@@ -309,6 +309,14 @@
                 <option <?php if($get_current_settings->row('block_edit_cost') == 1){echo 'selected ';} ?>value="1">Yes</option>
               </select>
             </div> 
+
+          <label class="control-label col-md-3">Remove Unproposed Child (Purchase Order) <i class="fa fa-question-circle" title="If yes, only sync proposed item to HQ and other item will be deleted"></i></label>
+            <div class="col-md-3">
+              <select name="remove_unproposed_child" class="form-control">
+                <option <?php if($get_current_settings->row('remove_unproposed_child') == 0){echo 'selected ';} ?>value="0">No</option>
+                <option <?php if($get_current_settings->row('remove_unproposed_child') == 1){echo 'selected ';} ?>value="1">Yes</option>
+              </select>
+            </div> 
         </div> 
       </div> 
     </div>

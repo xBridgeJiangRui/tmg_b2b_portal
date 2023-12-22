@@ -529,11 +529,11 @@ var mandatory = "<?php echo $row->mandatory;?>";
         var file_name_url = ''; 
         Object.keys(cut_pdf).forEach(function(key) {
           
-          // var result = checkFileExist("https://file.xbridge.my/b2b-pdf/ann_doc/"+acc_guid+"/"+guid+"/"+cut_pdf[key]+".pdf");
+          // var result = checkFileExist("https://tunasmanja.xbridge.my/b2b-pdf/ann_doc/"+acc_guid+"/"+guid+"/"+cut_pdf[key]+".pdf");
           // if (result == true) 
           // {
             
-            virtual_path = "https://file.xbridge.my/b2b-pdf/ann_doc/"+acc_guid+"/"+guid+"/";
+            virtual_path = "https://tunasmanja.xbridge.my/b2b-pdf/tmg/ann_doc/"+acc_guid+"/"+guid+"/";
           // }
           // else
           // {

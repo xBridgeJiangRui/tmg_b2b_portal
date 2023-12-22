@@ -20,7 +20,7 @@ class Consignment_report extends CI_Controller
         $this->general_internal_ip = $this->file_config_b2b->file_path_name($customer_guid, 'web', 'general_doc', 'general_internal_ip', 'GIP');
         $this->retailer_doc_name = $this->file_config_b2b->file_path_name('', 'web', 'retailer_doc', 'retailer_doc_name', 'RTDN');
 
-        $this->api_url = $this->general_internal_ip . $this->retailer_doc_name . '/rest_b2b/index.php/';
+        $this->api_url = $this->general_internal_ip . '/' .  $this->retailer_doc_name . '/rest_b2b/index.php/';
     }
 
     public function index()
@@ -2676,6 +2676,8 @@ class Consignment_report extends CI_Controller
             $datatable_url = site_url('Consignment_report/view_table_by_supcode?status=' . $status . '&loc=' . $loc . '&period_code=' . $speriod_code.'&f_t='.$tperiod_code.'&f_s='.$filter_supplier);
 
             $url = $this->api_url;
+
+            // print_r($url); die;
 
             $to_shoot_url = $url . "/Select/S_get_consignment_sales_statement_status";
             // $block = $this->db->query("SELECT * FROM set_setting WHERE module_name = 'CONSIGNMENT' AND code = 'CONS' LIMIT 1");

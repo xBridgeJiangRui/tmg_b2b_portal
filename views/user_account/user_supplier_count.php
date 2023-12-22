@@ -33,6 +33,7 @@
                     <th>Supplier Name</th>
                     <th>Log User Count</th>
                     <th>Invoice Number</th>
+                    <th>Waive B2B</th>
                     <th>Created At</th>
                     <th>Created By</th>
                   </tr>
@@ -95,6 +96,20 @@ $(document).ready(function() {
           }},
           { "data" : "user_count"},
           { "data" : "invoice_number"},
+          { "data" : "transfer_b2b",render:function( data, type, row ){
+            var element = '';
+
+            if(data == '1')
+            {
+              element += 'Yes';
+            }
+            else
+            {
+              element += 'No';
+            }
+
+            return element;
+          }},
           { "data" : "created_at"},
           { "data" : "created_by"},
       ],
@@ -115,6 +130,7 @@ $(document).ready(function() {
           $(nRow).find('td:eq(4)').css({"background-color":"#f0f725","color":"black"});
           $(nRow).find('td:eq(5)').css({"background-color":"#f0f725","color":"black"});
           $(nRow).find('td:eq(6)').css({"background-color":"#f0f725","color":"black"});
+          $(nRow).find('td:eq(7)').css({"background-color":"#f0f725","color":"black"});
         }
       }
     });
